@@ -1,0 +1,240 @@
+function [DET1out, DET2out] = brushDOA(DET1in, DET2in, varargin)
+% DOAin should be a table containing at least the following entries:
+%   DOA.('TDet') = time of detection in datenum format
+%   DOA.('Ang') = azimuth an delevation angles of each detection
+
+global brushing
+
+if nargin == 2 % no parameter file specified
+    if isfile('brushing.params') % see if default parameter file exists
+        loadParams('brushing.params')
+    else % if no default param file exists, generate one
+        makeParamFile
+    end
+elseif nargin == 3 % parameter file specified
+    loadParams(varargin{1})
+end
+
+% test whether label color legend exists
+figCol = findall(0, 'Type', 'figure', 'name', 'Legend of Label Colors');
+if isempty(figCol)
+    generateColorSchemeLegend(brushing) % if legend doesn't exist, generate it
+end
+
+% test whether Keystroke Command Legend exists
+figKey = findall(0, 'Type', 'figure', 'name', 'Keystroke Command Legend');
+if isempty(figKey)
+    generateKeystrokeLegend(brushing) % if legend doesn't exist, generate it
+end
+
+% set global data
+run_brushDOA(DET1in, DET2in, varargin);
+
+qselect = input('\nEnter ''q'' to quit: ', 's');
+
+global DET
+
+DET1out = DET{1};
+DET2out = DET{2};
+
+end
+
+function run_brushDOA(DET1in, DET2in, varargin)
+global brushing DET DETprev
+
+DET{1} = DET1in;
+DET{2} = DET2in;
+
+DETprev = DET; % previous detection values (for undo function)
+
+fig = findall(0, 'Type', 'figure', 'name', 'Brush DOA');    % see if Brush DOA figure already generated
+if isempty(fig)
+    fig = figure('Name', 'Brush DOA'); % generate figure
+end
+
+fig.Position = brushing.params.figPosition;
+
+%% plot DOAs:
+
+% set up plot parameters
+ms = 6; % marker size
+
+mmtime(1) = min([DET{1}.('TDet'); DET{2}.('TDet')]); % minimum time axis value
+mmtime(2) = max([DET{1}.('TDet'); DET{2}.('TDet')]); % maximum time axis value
+
+mmAz(1) = min([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % minimum time axis value
+mmAz(2) = max([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % maximum time axis value
+
+mmEl(1) = min([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % minimum time axis value
+mmEl(2) = max([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % maximum time axis value
+
+
+% plot Array 1
+sp(1) = subplot(4, 6, [1, 4]);
+scatter(DET{1}.('TDet'), DET{1}.('Ang')(:,1), ms, brushing.params.colorMat(DET{1}.('color'), :), 'filled')
+datetick
+set(gca, 'Xticklabel', [])
+xlim(mmtime)
+ylim(mmAz + [-2, 2])
+ylabel('AZ1')
+grid on
+subpos = get(sp(1), 'Position');
+set(sp(1), 'Position', subpos + [-.08, .005, .08, .068])
+
+sp(2) = subplot(4, 6, [7, 10]);
+scatter(DET{1}.('TDet'), DET{1}.('Ang')(:,2), ms, brushing.params.colorMat(DET{1}.('color'), :), 'filled')
+datetick
+set(gca, 'Xticklabel', [])
+xlim(mmtime)
+ylim(mmEl + [-2, 2])
+ylabel('EL1')
+grid on
+subpos = get(sp(2), 'Position');
+set(sp(2), 'Position', subpos + [-.08, -.025, .08, .068])
+% linkaxes([sp1, sp2], 'x')
+
+sp(3) = subplot(4, 6, [5,12]);
+scatter(DET{1}.('Ang')(:,1), DET{1}.('Ang')(:,2), ms, brushing.params.colorMat(DET{1}.('color'), :), 'filled')
+axis([mmAz(1)-2, mmAz(2)+2, mmEl(1)-2, mmEl(2)+2])
+xlabel('AZ1')
+ylabel('EL1')
+grid on
+subpos = get(sp(3), 'Position');
+set(sp(3), 'Position', subpos + [0, 0, .08, .07])
+
+
+% plot array 2
+sp(4) = subplot(4, 6, [13, 16]);
+scatter(DET{2}.('TDet'), DET{2}.('Ang')(:,1), ms, brushing.params.colorMat(DET{2}.('color'), :), 'filled')
+datetick
+set(gca, 'Xticklabel', [])
+xlim(mmtime)
+ylim(mmAz + [-2, 2])
+ylabel('AZ2')
+grid on
+subpos = get(sp(4), 'Position');
+set(sp(4), 'Position', subpos + [-.08, -.055, .08, .068])
+
+sp(5) = subplot(4, 6, [19, 22]);
+scatter(DET{2}.('TDet'), DET{2}.('Ang')(:,2), ms, brushing.params.colorMat(DET{2}.('color'), :), 'filled')
+datetick
+xlim(mmtime)
+ylim(mmEl + [-2, 2])
+ylabel('EL2')
+grid on
+subpos = get(sp(5), 'Position');
+set(sp(5), 'Position', subpos + [-.08, -0.085, .08, .068])
+% linkaxes([sp3, sp4], 'x')
+
+sp(6) = subplot(4, 6, [17,24]);
+scatter(DET{2}.('Ang')(:,1), DET{2}.('Ang')(:,2), ms, brushing.params.colorMat(DET{2}.('color'), :), 'filled')
+axis([mmAz(1)-2, mmAz(2)+2, mmEl(1)-2, mmEl(2)+2])
+xlabel('AZ2')
+ylabel('EL2')
+grid on
+subpos = get(sp(6), 'Position');
+set(sp(6), 'Position', subpos + [0, -.06, .08, .07])
+
+brush on
+
+hManager = uigetmodemanager(fig);
+[hManager.WindowListenerHandles.Enabled] = deal(false);  % HG2 (on 2014b or later)
+set(fig, 'KeyPressFcn', @keyPressCallback);
+
+end
+
+
+%% Keypress Callback
+function keyPressCallback(source, eventdata)
+
+global brushing DET DETprev
+
+key = eventdata.Key;
+
+% get highlighted data on AR1:
+Ind{1} = [];
+for isp = 4:6 % subplots 4, 5, & 6 are for AR1
+    selectedData = source.Children(isp).Children.BrushData;
+    Itemp = find(selectedData~=0);
+    Ind{1} = [Ind{1}, Itemp];
+    source.Children(isp).Children.BrushData = []; % unselect highlighted points
+end
+
+% get highlighted data on AR2:
+Ind{2} = [];
+for isp = 1:3 % subplots 1, 2, & 3 are for AR2
+    selectedData = source.Children(isp).Children.BrushData;
+    Itemp = find(selectedData~=0);
+    Ind{2} = [Ind{2}, Itemp];
+    source.Children(isp).Children.BrushData = []; % unselect highlighted points
+end
+
+
+numkey = str2double(key); % convert keyboard input to a number (returns NaN if value is not a number)
+if ~(isempty(numkey)||isnan(numkey)) % if input is number, assign as whale number:
+    if numkey>8||numkey<0
+        errBox = msgbox('error: invalid whale number\nSelect a number 1 thorugh 8', 'Error');
+    else
+        DETprev = DET; % set DETprev as current state for undo
+        
+        % update AR1
+        if ~isempty(Ind{1})
+            DET{1}.('label')(Ind{1}) = key;
+            DET{1}.('color')(Ind{1}) = (numkey + 2);
+            for isp = 4:6
+                set(source.Children(isp).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :))
+            end
+        end
+        
+        % update AR2
+        if ~isempty(Ind{2})
+            DET{2}.('label')(Ind{2}) = key;
+            DET{2}.('color') = numkey + 2;
+            for isp = 1:3
+                set(source.Children(isp).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
+            end
+        end
+
+    end
+
+else % if input is letter, perform associated function
+    switch key
+        case 'd' % delete
+            DETprev = DET; % set DETprev as current state for undo
+            % update AR1
+            if ~isempty(Ind{1})
+                DET{1}(Ind{1}, :) = [];
+                
+                % update az vs el plot
+                set(source.Children(4).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                        'xdata', DET{1}.('Ang')(:,1), ...
+                        'ydata', DET{1}.('Ang')(:,2))
+                
+
+                % update t vs el plot
+                set(source.Children(5).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                        'xdata', DET{1}.('TDet'), ...
+                        'ydata', DET{1}.('Ang')(:,2))
+
+                % update t vs az plot
+                set(source.Children(6).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                        'xdata', DET{1}.('TDet'), ...
+                        'ydata', DET{1}.('Ang')(:,1))
+
+
+            end
+
+
+        case 'b' % label as buzz
+            
+        case 'z' % toggle zoom on
+        case 'x' % toggle zoom off
+
+        case 'u' % undo
+            DET = DETprev;
+    end
+end
+
+ok = 1;
+
+end
