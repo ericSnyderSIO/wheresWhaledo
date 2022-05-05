@@ -1,7 +1,7 @@
 function loadParams(filename)
 % read in parameter file
+% NOTE: parameter file must use a global variable defined within.
 
-global brushing
 fid = fopen(filename, 'r');
 while ~feof(fid)
     tline = fgets(fid);
