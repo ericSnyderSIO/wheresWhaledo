@@ -37,9 +37,11 @@ while t2<=tend
 
         if idet+length(pks)-1>length(detTable.('TDet'))
 
-            tempTable = table('Size', [10001, 2], 'VariableTypes', {'double', 'double'}, 'VariableNames', {'TDet', 'DAmp'});
+            tempTable = table('VariableNames', "")
+            tempTable.('TDet') = zeros(10001, 1);
+            tempTable.('DAmp') = zeros(10001, 1);
 
-            detTable = [detTable; tempTable];
+            detTable = [detTable, tempTable];
         end
         
         detTable.('DAmp')(idet:idet+length(pks)-1) = pks;
@@ -54,9 +56,11 @@ while t2<=tend
     t2 = t1 + detParam.twin/spd;
 end
 
-% remove excess rows from initializing table
+% remove excess zeros
 Irem = find(detTable.('TDet')==0);
-detTable(Irem, :) = [];
+detTable.('DAmp')(Irem) = [];
+detTable.('TDet')(Irem) = [];
+
 
 detTable.('Label') = num2str(zeros(size(detTable.('TDet'))));
 detTable.('color') = 2.*ones(size(detTable.('TDet')));
