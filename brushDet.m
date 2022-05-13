@@ -5,7 +5,7 @@ function [outDet, labels] = brushDet(DATA, inDet, varargin)
 % -DATA{i}(1,:) is the time vector for the ith receiver
 % -DATA{i}(2,:) is the amplitude vector for the ith receiver
 % -inDet{i} are the initial detections for the ith receiver
-% inDet is a detection table 
+% inDet is a detection matrix 
 % -(optional) paramFile is the path to a parameter file which allows various
 % settings for the interface
 % -outDet{i} is the output detection table for the ith receiver
@@ -14,7 +14,14 @@ global brushing
 
 brushing.DATA = DATA;           % acoustic data
 brushing.nAxes = numel(DATA);   % number of axes/receivers to display
-brushing.DET = inDet;         % initial detections
+
+% pull out detections within time period of acoustic data
+for i = 1:brushing.nAxes
+    I = find(inDet{i}.('TDet')>=brushing.DATA{i}(1, 1) & inDet{i}.('TDet')<=brushing.DATA{i}(1, end));
+    
+    brushing.DET{i} = inDet{i}(I,:);
+    brushing.DET{i}.('Ind') = I; % indices from full dataset included in the plot
+end
 
 % determine if param file was specified:
 if nargin < 2
@@ -47,7 +54,11 @@ end
 run_brushDet % run the GUI
 
 qselect = input('\nEnter ''q'' to quit: ', 's');
-outDet = brushing.DET;
+
+% update full detection tables with deletions and changes
+
+
+
 
 end
 
@@ -62,10 +73,6 @@ brushing.tRange = [nan, nan];        % limits of x axis on plot
 for i = 1:brushing.nAxes
     brushing.tRange(1) = min([min(brushing.DATA{i}(1,:)), brushing.tRange(1)]); % minimum time on plot
     brushing.tRange(2) = max([max(brushing.DATA{i}(1,:)), brushing.tRange(2)]); % maximum time on plot
-
-    brushing.DET{i}.('currentPlot') = zeros(size(brushing.DET{i}.('TDet')));
-    I = find(brushing.DET{i}.('TDet') >= brushing.tRange(1) & brushing.DET{i}.('TDet') <=brushing.tRange(2));
-    brushing.DET{i}.('currentPlot')(I) = 1;
 end
 
 
@@ -92,12 +99,13 @@ for i = 1:brushing.nAxes
 
     plot(ax(i), brushing.DATA{i}(1,:), brushing.DATA{i}(2,:), 'HandleVisibility', 'off', 'color', brushing.params.colorMat(1,:))
     ax(i).Toolbar.Visible = 'off'; % turn off matlab's toolbar so user doesn't click it accidentally
+    
+    I = find(brushing.DET{i}.('Labels')~=-1); % find indices not tagged for deletion
 
-    I = find(brushing.DET{i}.('currentPlot')==1);
     if ~isempty(I) % determine if there are detections on this receiver
         hold(ax(i), 'on')
         scatter(ax(i), brushing.DET{i}.('TDet'),brushing.DET{i}.('DAmp')(I), 100,...
-            brushing.params.colorMat(brushing.DET{i}.color(I), :), 'x', 'linewidth', 2) % plot detections
+            brushing.params.colorMat(brushing.DET{i}.('color')(I), :), 'x', 'linewidth', 2) % plot detections
         hold(ax(i), 'off')
         xlim(ax, brushing.tRange)
 

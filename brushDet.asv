@@ -5,7 +5,7 @@ function [outDet, labels] = brushDet(DATA, inDet, varargin)
 % -DATA{i}(1,:) is the time vector for the ith receiver
 % -DATA{i}(2,:) is the amplitude vector for the ith receiver
 % -inDet{i} are the initial detections for the ith receiver
-% inDet is a detection table 
+% inDet is a detection matrix 
 % -(optional) paramFile is the path to a parameter file which allows various
 % settings for the interface
 % -outDet{i} is the output detection table for the ith receiver
@@ -14,7 +14,14 @@ global brushing
 
 brushing.DATA = DATA;           % acoustic data
 brushing.nAxes = numel(DATA);   % number of axes/receivers to display
-brushing.DET = inDet;         % initial detections
+
+% pull out detections within time period of acoustic data
+for i = 1:brushing.nAxes
+    I = find(inDet{i}.('TDet')>=brushing.DATA{i}(1, 1) & inDet{i}.('TDet')<=brushing.DATA{i}(1, end));
+    
+    brushing.DET{i} = inDet{i}(I,:);
+    brushing.DET{i}.('Ind') = I; % index of full dataset
+end
 
 % determine if param file was specified:
 if nargin < 2
@@ -97,16 +104,16 @@ for i = 1:brushing.nAxes
     if ~isempty(I) % determine if there are detections on this receiver
         hold(ax(i), 'on')
         scatter(ax(i), brushing.DET{i}.('TDet'),brushing.DET{i}.('DAmp')(I), 100,...
-            brushing.params.colorMat(brushing.DET{i}.color, :), 'x', 'linewidth', 2) % plot detections
+            brushing.params.colorMat(brushing.DET{i}.color(I), :), 'x', 'linewidth', 2) % plot detections
         hold(ax(i), 'off')
         xlim(ax, brushing.tRange)
 
-        if length(brushing.DET{i})>1
+        if length(I)>1
             % adjust slider range according to detection amplitudes
-            uif.Children.Children(i).Children(1).Limits = [min(brushing.DET{i}.('DAmp')), max(brushing.DET{i}.('DAmp'))];
+            uif.Children.Children(i).Children(1).Limits = [min(brushing.DET{i}.('DAmp')(I)), max(brushing.DET{i}.('DAmp')(I))];
 
             % Set slider value to minimum detection amplitude
-            uif.Children.Children(i).Children(1).Value = min(brushing.DET{i}.('DAmp'));
+            uif.Children.Children(i).Children(1).Value = min(brushing.DET{i}.('DAmp')(I));
 
             b = brush(uif);
             b.Color = 'r';
