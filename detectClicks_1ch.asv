@@ -9,12 +9,7 @@ detParam.twintwin = 30; % 30 second window;
 t1 = tstart;
 t2 = t1 + detParam.twin/spd;
 
-if isfield(XH, 'deploymentName')
-    wbtext = ['Running detector on ', XH.deploymentName];
-else
-    wbtext = 'Running detector';
-end
-wb = waitbar(0, wbtext);
+wb = waitbar(calcPerc, 'Detector completion status');
 
 % design filter:
 
@@ -52,13 +47,13 @@ while t2<=tend
     end
     
     calcPerc = (t2-tstart)/(tend-tstart);
-    waitbar(calcPerc, wb, wbtext);
+    wb = waitbar(calcPerc, 'Detector completion status');
 
     t1 = t2;
     t2 = t1 + detParam.twin/spd;
 end
 
-close(wb)
+
 
 detTable.('Label') = num2str(zeros(size(detTable.('TDet'))));
 detTable.('color') = 2.*ones(size(detTable.('TDet')));
