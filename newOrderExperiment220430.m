@@ -13,6 +13,7 @@ encounterEnd = datenum([18 06 11 12 30 00]);
 % end
 
 c = 1488.4;
+spd = 60*60*24;
 fs1 = 200e3;
 fs4 = 100e3;
 
@@ -20,6 +21,7 @@ fs4 = 100e3;
 fc = 20e3;
 [b4, a4] = ellip(4,0.1,40,fc*2/fs4,'high'); % 4ch filter coeff's
 [b1, a1] = ellip(4,0.1,40,fc*2/fs1,'high'); % 1ch filter coeff's
+% [b, a] = ellip(4,0.1,40,detParam.fc*2/detParam.fs,'high');
 
 %% Detect clicks on all instruments
 
@@ -52,32 +54,30 @@ H{2} = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
          hyd2.hydPos(4,:)-hyd2.hydPos(3,:)];
 
 
-%% Run Detector
-% load('detections.mat')
-
-% SOCAL_E_63_EE
+% %% Run Detector
+% 
+% % SOCAL_E_63_EE
 % [DET{1}] = detectClicks_4ch_SOCAL_E_63(encounterStart, encounterEnd, XH{1}.xwavTable, H{1}, c, 'detClicks_4ch.params'); 
-
-% SOCAL_E_63_EW
+% 
+% % SOCAL_E_63_EW
 % [DET{2}] = detectClicks_4ch_SOCAL_E_63(encounterStart, encounterEnd, XH{2}.xwavTable, H{2}, c, 'detClicks_4ch.params');
- 
-% SOCAL_E_63_EN
+%  
+% % SOCAL_E_63_EN
 % [DET{3}] = detectClicks_1ch(encounterStart, encounterEnd, XH{3}.xwavTable, 'detClicks_1ch.params');
-
-% SOCAL_E_63_ES
+% 
+% % SOCAL_E_63_ES
 % [DET{4}] = detectClicks_1ch(encounterStart, encounterEnd, XH{4}.xwavTable, 'detClicks_1ch.params');
- 
+%  
 % save('detections', 'DET')
-
-
-%% run brushDOA
-load('detections.mat')
-% load('detections_brushDOA.mat')
-[det1, det2] = brushDOA(DET{1}, DET{2});
-
-DET{1} = det1;
-DET{2} = det2;
- 
+% 
+% %% run brushDOA
+% load('detections.mat')
+% 
+% [det1, det2] = brushDOA(DET{1}, DET{2});
+% 
+% DET{1} = det1;
+% DET{2} = det2;
+%  
 % save('detections_brushDOA.mat', 'DET')
 
 %% step through 30 seconds at a time, brushdet
@@ -92,7 +92,7 @@ XH{3} = xwavTable;
 load('D:\SOCAL_E_63\xwavTables\SOCAL_E_63_ES_xwavLookupTable');
 XH{4} = xwavTable;
 
-t1 = encounterStart;
+t1 = (encounterStart+encounterEnd)/2;
 t2 = t1 + 30/spd;
 
 wn = 1;
@@ -122,7 +122,7 @@ for ih = 1:2 % prepare in 4ch data
 end
 
 for ih = 3:4
-    [x, t] = quickxwavRead(t1, t2, fs4, XH{ih});
+    [x, t] = quickxwavRead(t1, t2, fs1, XH{ih});
     xf = filtfilt(b1, a1, x);
     X{ih}(1,:) = t;
     X{ih}(2,:) = xf;
