@@ -190,7 +190,7 @@ if sldVal.Value>sldVal.PreviousValue % slider value increased
 
 elseif sldVal.Value<sldVal.PreviousValue % slider value decreased
     
-    Iadd = find(brushing.DET{irec}.('color')==0 & brushing.DET{iRec}.('DAmp')>=sldVal.Value); % indices of points to be added back onto plot
+    Iadd = find(brushing.DET{iRec}.('color')==0 & brushing.DET{iRec}.('DAmp')>=sldVal.Value); % indices of points to be added back onto plot
     
     % add those points back into plotted data
     brushing.DET{iRec}.('color')(Iadd) = 2;
