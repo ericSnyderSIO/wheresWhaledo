@@ -1,4 +1,4 @@
-function [outDet, labels] = brushDet(DATA, inDet, varargin)
+function outDet = brushDet(DATA, inDet, varargin)
 % [outDet, labels] = brushDet(DATA, inDet, paramFile) runs GUI which 
 % allows user to delete and label detections on top of time series data
 % -DATA{i} is the time series data for the ith receiver
@@ -55,10 +55,15 @@ run_brushDet % run the GUI
 
 qselect = input('\nEnter ''q'' to quit: ', 's');
 
-% update full detection tables with deletions and changes
-% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+outDet = inDet; 
+for i = 1:brushing.nAxes
+    % update indices which were changed:
+    outDet{i}.('Label')(brushing.DET{i}.Ind) = brushing.DET{i}.('Label');
+    outDet{i}.('color')(brushing.DET{i}.Ind) = brushing.DET{i}.('color');
 
-
+    Irem = find(outDet{i}.('color')<=0); % remove indices tagged for removal
+    outDet{i}(Irem, :) = [];
+end
 
 end
 
@@ -181,12 +186,14 @@ iRec = str2double(ax.Title(end)); % Receiver number
 
 if sldVal.Value>sldVal.PreviousValue % slider value increased
     
-    Irem = find(brushing.DET{iRec}(2,:)<sldVal.Value); % indices of detections which are lower than threshold
+    Irem = find(brushing.DET{iRec}.('DAmp')<sldVal.Value); % indices of detections which are lower than threshold
     
-    brushing.DET{irec}.('color')(Irem) = 0;
+    brushing.DET{iRec}.('color')(Irem) = 0;
 
-    set(ax.Children(2).Children, 'xdata', brushing.outDet{iRec}(1,:), 'ydata', brushing.outDet{iRec}(2,:), ...
-        'cdata', brushing.params.colorMat(brushing.colorIndex{iRec}, :));
+    I = find(brushing.DET{iRec}.('color')>=2);
+
+    set(ax.Children(2).Children, 'xdata', brushing.DET{iRec}.('TDet')(I), 'ydata', brushing.DET{iRec}.('DAmp')(I), ...
+        'cdata', brushing.params.colorMat(brushing.DET{iRec}.('color')(I), :));
 
 elseif sldVal.Value<sldVal.PreviousValue % slider value decreased
     
