@@ -70,7 +70,7 @@ H{2} = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
 %  
 % save('detections', 'DET')
 % 
-% %% run brushDOA
+%% run brushDOA
 % load('detections.mat')
 % 
 % [det1, det2] = brushDOA(DET{1}, DET{2});
@@ -128,8 +128,10 @@ for ih = 3:4
     X{ih}(2,:) = xf;
 end
 
-[outDet, labels] = brushDet(X, DET);
+outDet = brushDet(X, DET);
 
+DET = outDet;
+save('detections_brushDet.mat', 'DET')
 %% Step through each detection, validate, select good arrays, coarse and fine localization
 
 %% Localize each detection

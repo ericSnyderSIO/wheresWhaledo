@@ -55,9 +55,11 @@ run_brushDet % run the GUI
 
 qselect = input('\nEnter ''q'' to quit: ', 's');
 
-% update full detection tables with deletions and changes
-% !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+ok = 1
+outDet = inDet;
+for i = 1:brushing.nAxes
+    outDet{i}.('Label')(brushing.DET{i}.Ind) = brushing.DET{1}.In
+end
 
 
 end
@@ -181,16 +183,18 @@ iRec = str2double(ax.Title(end)); % Receiver number
 
 if sldVal.Value>sldVal.PreviousValue % slider value increased
     
-    Irem = find(brushing.DET{iRec}(2,:)<sldVal.Value); % indices of detections which are lower than threshold
+    Irem = find(brushing.DET{iRec}.('DAmp')<sldVal.Value); % indices of detections which are lower than threshold
     
-    brushing.DET{irec}.('color')(Irem) = 0;
+    brushing.DET{iRec}.('color')(Irem) = 0;
 
-    set(ax.Children(2).Children, 'xdata', brushing.outDet{iRec}(1,:), 'ydata', brushing.outDet{iRec}(2,:), ...
-        'cdata', brushing.params.colorMat(brushing.colorIndex{iRec}, :));
+    I = find(brushing.DET{iRec}.('color')>=2);
+
+    set(ax.Children(2).Children, 'xdata', brushing.DET{iRec}.('TDet')(I), 'ydata', brushing.DET{iRec}.('DAmp')(I), ...
+        'cdata', brushing.params.colorMat(brushing.DET{iRec}.('color')(I), :));
 
 elseif sldVal.Value<sldVal.PreviousValue % slider value decreased
     
-    Iadd = find(brushing.DET{irec}.('color')==0 & brushing.DET{iRec}.('DAmp')>=sldVal.Value); % indices of points to be added back onto plot
+    Iadd = find(brushing.DET{iRec}.('color')==0 & brushing.DET{iRec}.('DAmp')>=sldVal.Value); % indices of points to be added back onto plot
     
     % add those points back into plotted data
     brushing.DET{iRec}.('color')(Iadd) = 2;
@@ -343,7 +347,7 @@ else
                 brushing.DET{iRec}.('color')(numRow+1) = 2;
 
                 I = find(brushing.DET{iRec}.('color')>=2);
-                set(source.Children.Children(iRec).Children(2).Children, ...
+                set(source.Children.Children(iRec).Children(2).Children(2), ...
                         'xdata', brushing.DET{iRec}.('TDet')(I), 'ydata', brushing.DET{iRec}.('DAmp')(I), ...
                         'cdata', brushing.params.colorMat(brushing.DET{iRec}.('color')(I), :));
 
