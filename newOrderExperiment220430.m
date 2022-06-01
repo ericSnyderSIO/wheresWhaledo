@@ -72,7 +72,7 @@ H{2} = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
 
 %% run brushDOA
 % load('detections.mat')
-% load('detections_brushDOA.mat')
+
 % [det1, det2] = brushDOA(DET{1}, DET{2});
 % 
 % DET{1} = det1;
