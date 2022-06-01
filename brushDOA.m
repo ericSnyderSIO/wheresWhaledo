@@ -155,7 +155,7 @@ global brushing DET DETprev
 key = eventdata.Key;
 
 % get highlighted data on AR1:
-Ind{1} = [];
+Ind{1} = []; % highlighted data on AR1
 for isp = 4:6 % subplots 4, 5, & 6 are for AR1
     selectedData = source.Children(isp).Children.BrushData;
     Itemp = find(selectedData~=0);
@@ -164,7 +164,7 @@ for isp = 4:6 % subplots 4, 5, & 6 are for AR1
 end
 
 % get highlighted data on AR2:
-Ind{2} = [];
+Ind{2} = []; % highlighted data on AR2
 for isp = 1:3 % subplots 1, 2, & 3 are for AR2
     selectedData = source.Children(isp).Children.BrushData;
     Itemp = find(selectedData~=0);
@@ -296,6 +296,45 @@ else % if input is letter, perform associated function
             set(source, 'KeyPressFcn', @keyPressCallback);
         case 'u' % undo
             DET = DETprev;
+
+
+            % update AR1:
+
+            % update az vs el plot
+            set(source.Children(4).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                'xdata', DET{1}.('Ang')(:,1), ...
+                'ydata', DET{1}.('Ang')(:,2))
+
+
+            % update t vs el plot
+            set(source.Children(5).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                'xdata', DET{1}.('TDet'), ...
+                'ydata', DET{1}.('Ang')(:,2))
+
+            % update t vs az plot
+            set(source.Children(6).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :), ...
+                'xdata', DET{1}.('TDet'), ...
+                'ydata', DET{1}.('Ang')(:,1))
+
+
+
+            % update AR2
+
+            % update az vs el plot
+            set(source.Children(1).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :), ...
+                'xdata', DET{2}.('Ang')(:,1), ...
+                'ydata', DET{2}.('Ang')(:,2))
+
+            % update t vs el plot
+            set(source.Children(2).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :), ...
+                'xdata', DET{2}.('TDet'), ...
+                'ydata', DET{2}.('Ang')(:,2))
+
+            % update t vs az plot
+            set(source.Children(3).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :), ...
+                'xdata', DET{2}.('TDet'), ...
+                'ydata', DET{2}.('Ang')(:,1))
+
     end
 end
 
