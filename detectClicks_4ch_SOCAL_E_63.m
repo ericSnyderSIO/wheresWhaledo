@@ -85,7 +85,7 @@ while t2<=tend
                 end
 
             end
-            doa = -H\(tdoa.'.*c);
+            doa = H\(tdoa.'.*c);
             doa = doa./sqrt(sum(doa.^2));
 
             el = 180 - acosd(doa(3));

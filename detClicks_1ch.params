@@ -10,4 +10,4 @@ detParam.fc = 20e3; % filter cutoff frequency
 
 detParam.fs = 200e3; % sampling frequency
 
-detParam.minPkDist =  round(1e-3/detParam.fs);
+detParam.minPkDist =  round(5e-3*detParam.fs);
