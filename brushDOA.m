@@ -263,25 +263,6 @@ if ~(isempty(numkey)||isnan(numkey)) % if input is number, assign as whale numbe
 
 else % if input is letter, perform associated function
     switch key
-        case 'h' % highlight
-            % update AR1
-            if ~isempty(Ind{1})
-                DET{1}.('color')(Ind{1}) = 11;
-                selecDet = DET{1}.('color')(Ind{1})
-                for isp = 4:6
-                    %set(source.Children(isp).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :))
-                    set(source.Children(isp).Children, 'cdata', [1 0 0])
-                end
-            end
-            
-            % update AR2
-            if ~isempty(Ind{2})
-                DET{2}.('label')(Ind{2}) = key;
-                DET{2}.('color')(Ind{2}) = 11;
-                for isp = 1:3
-                    set(source.Children(isp).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
-                end
-            end
             
         case 'd' % delete
             DETprev = DET; % set DETprev as current state for undo
