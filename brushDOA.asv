@@ -199,9 +199,7 @@ if iplot <= 3 % subplots 1, 2, & 3 are for AR2
     end
 end
 
-% Get mode manager and current mode property to set keypress function
 hManager = uigetmodemanager(source);
-% Allows to change key press callback function
 [hManager.WindowListenerHandles.Enabled] = deal(false);  % HG2 (on 2014b or later)
 
 % Keypress Callback

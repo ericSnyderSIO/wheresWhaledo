@@ -24,7 +24,7 @@ else
 end
 
 % Add echosounder detector
-[bping, aping] = ellip(4,0.1,40,[20e3 30e3].*2/detParam.fs)
+[bping, aping] = ellip(4,0.1,40,[20e3 30e3].*2/detParam.fs);
 pingThresh = 70;
 detTable = table;
 
