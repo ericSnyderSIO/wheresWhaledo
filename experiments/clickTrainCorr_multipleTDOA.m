@@ -1,8 +1,9 @@
+clear all
 %% User inputs:
 
 arrno = 2;  % which array is primary array (must be a 4ch)
-trackName = '180611_1030';
-% trackName = 'track43_180327_084016';                                % base name of track
+% trackName = '180611_1030';
+trackName = 'track43_180327_084016';                                % base name of track
 trackFolder = 'D:\MATLAB_addons\gitHub\wheresWhaledo\experiments';  % folder containing detection
 saveFolder = 'D:\MATLAB_addons\gitHub\wheresWhaledo\experiments';   % folder where output will be saved
 saveFileName = [trackName, '_CTC_', 'Array', num2str(arrno)]; 
@@ -14,10 +15,13 @@ fsct = 10e3;                            % sampling rate of click train
 c = 1488.4;                             % speed of sound, m/s
 maxLag = round(fsct*(2000/1500 + .4));  % Maximum lags in xcorr
 twin = 30;                              % window length for click train
-Nhann = (10e-3)*fsct;                    % Length of the Hanning window used in place of clicks
+Nhann = (10e-3)*fsct;                   % Length of the Hanning window used in place of clicks
 Wk = hann(Nhann);                       % Hanning window used to replace all clicks
 maxNumTDOA = 4;                         % maximum possible TDOAs to save per pair per detection
 
+% peaks of click train correlation must be above this value (2*Nhann
+% corresponds to ~2 clicks aligning well in the xcorr step):% 
+minXcorrPeak = 2*Nhann;                 
 %% Locate and load detection file
 detDir = dir(fullfile(trackFolder, ['*det*', trackName, '*.mat']));
 load(detDir.name)
@@ -92,6 +96,7 @@ for wn = unique(DET{arrno}.color).'
     Ilab = find(DET{arrno}.color==wn); % detections labeled wn
 
     % initialize output variables:
+    whale{wn-1}.TDet = -99.*ones(size(Ilab));
     whale{wn-1}.TDOA = -99.*ones(length(Ilab), length(xcorrCol), maxNumTDOA); % Time Difference of Arrival
     whale{wn-1}.XCTpk = whale{wn-1}.TDOA;   % peak values of xcorr output
     whale{wn-1}.SNR = whale{wn-1}.TDOA;     % Signal-to-noise ratio
@@ -152,8 +157,8 @@ for wn = unique(DET{arrno}.color).'
         
         % cross-correlate click trains and calculate TDOAs, peaks of xcorr,
         % and SNR:
-        [tdoa, xcpk, snr] = calcTDOA_CTC(xctHann, maxLag, xcorrCol, maxNumTDOA, Nhann, fsct);
-
+        [tdoa, xcpk, snr] = calcTDOA_CTC(xctHann, maxLag, xcorrCol, maxNumTDOA, minXcorrPeak, Nhann, fsct);
+        
         whale{wn-1}.TDet(ndet) = tdet;          % Detection time
         whale{wn-1}.TDOA(ndet, :, :) = tdoa;    % TDOA    
         whale{wn-1}.XCTpk(ndet, :, :) = xcpk;   % Peak of Xcorr
@@ -199,7 +204,7 @@ saveas(fig, fullfile(saveFolder, saveFileName), 'fig') % save figure
 
 
 %%
-function [tdoa, xcpk, snr] = calcTDOA_CTC(xct, maxLag, xcovInd, maxNumTDOA, Nhann, fsct)
+function [tdoa, xcpk, snr] = calcTDOA_CTC(xct, maxLag, xcovInd, maxNumTDOA, minXcorrPeak, Nhann, fsct)
 % [tdoa, xcpk, snr] = calcTDOA_CTC(xctCorr, xcovInd, maxNumTDOA, fsct)
 % calculates the tdoa, peak of xcorr (xcpk), and SNR of a click train
 % inputs:
@@ -218,9 +223,9 @@ snr = xcpk;
 [xctCorr, lags] = xcorr(xct, maxLag);
 
 for ipair = 1:length(xcovInd) % iterate over each HARP pair
-    if max(xctCorr(:, xcovInd(ipair)))>200 % only save data if peak of xctCorr is higher than 200
+    if max(xctCorr(:, xcovInd(ipair)))>minXcorrPeak % only save data if peak of xctCorr is higher than 200
 
-        [pks, locs] = findpeaks(xctCorr(:, xcovInd(ipair)), 'SortStr', 'descend', 'minPeakHeight', 200, 'NPeaks', maxNumTDOA);
+        [pks, locs] = findpeaks(xctCorr(:, xcovInd(ipair)), 'SortStr', 'descend', 'minPeakHeight', minXcorrPeak, 'NPeaks', maxNumTDOA);
         if length(pks)>1
             if pks(2)>.8*pks(1)
                 npksBig = find(pks>.8*pks(1)); % find indices of peaks bigger than .8 of max peak
