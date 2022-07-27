@@ -1,7 +1,7 @@
 clear all
 %% User inputs:
 
-arrno = 1;  % which array is primary array (must be a 4ch)
+arrno = 2;  % which array is primary array (must be a 4ch)
 % trackName = '180611_1030';
 trackName = 'track43_180327_084016';                                % base name of track
 trackFolder = 'D:\MATLAB_addons\gitHub\wheresWhaledo\experiments';  % folder containing detection

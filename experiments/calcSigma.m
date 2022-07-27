@@ -107,8 +107,10 @@ sig2EW(3) = c^2*sigEE_rayBend^2;
 sig2EW(4) = c^2; 
 
 % large aperture variance:
-sigLargeAp_equation = 'sig_lrg = sqrt(sig2lrg*[ones(1,6), (TDOA+drift).^2, ones(1,6), sig_xcov^2])';
+sigLargeAp_equation = 'sig_lrg = sqrt(sum(sig2lrg.*[ones(1,6); (TDOA+drift).^2; ones(1,6); sig_xcov^2]))';
 sigLarge_notes = 'TDOA must be 1'
+
+% variance due to hydrophone locations:
 sig2lrg(1, 1) = sigEE_h^2 + sigEW_h^2;
 sig2lrg(1, 2) = sigEE_h^2 + sigEN_h^2;
 sig2lrg(1, 3) = sigEE_h^2 + sigES_h^2;
@@ -116,8 +118,10 @@ sig2lrg(1, 4) = sigEW_h^2 + sigEN_h^2;
 sig2lrg(1, 5) = sigEW_h^2 + sigES_h^2;
 sig2lrg(1, 6) = sigEN_h^2 + sigES_h^2;
 
+% variance due to sound speed (calculated from ray tracing)
 sig2lrg(2, 1:6) = sig_clrg^2;
 
+% variance from drift:
 sig2lrg(3, 1) = c^2*sigEW_drift^2;
 sig2lrg(3, 2) = c^2*sigEN_drift^2;
 sig2lrg(3, 3) = c^2*sigES_drift^2;
@@ -125,6 +129,8 @@ sig2lrg(3, 4) = c^2*(sigEW_drift^2 + sigEN_drift^2);
 sig2lrg(3, 5) = c^2*(sigEW_drift^2 + sigES_drift^2);
 sig2lrg(3, 6) = c^2*(sigEN_drift^2 + sigES_drift^2);
 
+% variance in TDOA (must incorporate SNR, to be calculated for each
+% detection)
 sig2lrg(4, 1:6) = c^2;
 
 
