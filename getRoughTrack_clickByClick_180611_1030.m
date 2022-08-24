@@ -70,6 +70,9 @@ for wn = unique(DET{arrno}.color).'
                 tdoa(:, np) = lags(imax)./fsct;
             end
         end
+
+        % Need to correct TDOA for drift!
+        
         detCount = detCount + 1;
         TDet(detCount) = tdet;
         TDOA(detCount, :) = tdoa;
@@ -88,6 +91,54 @@ for np = 1:6
     ylabel('TDOA')
     datetick
 end
+% test whether label color legend exists
+figCol = findall(0, 'Type', 'figure', 'name', 'Legend of Label Colors');
+if isempty(figCol)
+    generateColorSchemeLegend(brushing) % if legend doesn't exist, generate it
+end
 
 
 saveas(fig, ['clickByClick_windowLength_', num2str(twin)], 'fig')
+save('clickByClick_roughTDOA_180611_1030', 'TDet', 'TDOA', 'label')
+
+%% Localize on 200 m grid
+load('clickByClick_roughTDOA_180611_1030.mat')
+M200 = load('D:\SOCAL_E_63\tracking\experiments\largeApertureTDOA\TDOAmodel_100m')
+
+% set up parameters for LMS (CHECK WITH JOHN ABOUT THESE)
+sigmaH_sml = .1e-3; % uncertainty in small ap hydrophone locations
+sigmaX_sml = .05e-3; % uncertainty in small ap TDOA
+sig_sml = sqrt(sigmaH_sml^2 + sigmaX_sml^2);
+
+sigmaH_lrg = 50e-3; % uncertainty in large ap hydrophone locations
+sigmaX_lrg = 30e-3; % uncertainty in large ap TDOA
+sig_lrg = sqrt(sigmaH_lrg^2 + sigmaX_lrg^2);
+
+iloc = 0;
+for idet = 1:length(TDet)
+
+    if sum(TDOA(idet, :)==-99)==0
+        iloc = iloc+1;
+        N = 6; % number of small aperture TDOAs used
+        [~, i1] = min(abs(DET{1}.TDet-TDet(idet)));
+        [~, i2] = min(abs(DET{2}.TDet-(TDet(idet)+TDOA(idet, 1)/spd)));
+        tdoasml = -[DET{1}.TDOA(i1, :), DET{2}.TDOA(i2, :)];
+        Lsml = (2*pi*sig_sml^2)^(-N/2).*exp((-1/(2*sig_sml^2)).*sum((M200.TDOA(:, 1:12) - tdoasml).^2, 2));
+
+        %         Lsml = (2*pi*sig_sml^2)^(-N/2).*exp(-1/(2*sig_sml^2).*sum((M200.TDOA(:, 7:12) - tdoasml(7:12)).^2, 2));
+
+        M = 6; % number of large aperture TDOAs used
+        tdoalrg = TDOA(idet, :);
+        Llrg = (2*pi*sig_lrg^2)^(-M/2).*exp((-1/(2*sig_lrg^2)).*sum((M200.TDOA(:, 13:18) - tdoalrg).^2, 2));
+
+        L = Lsml.*Llrg;
+
+        [~, im] = max(L);
+
+        wloc_course(iloc, :) = M200.wloc(im, :);
+        locLabel(iloc) = label(idet);
+    end
+end
+
+figure(101)
+scatter3(wloc_course(:, 1), wloc_course(:, 2), wloc_course(:, 3), 33, brushing.params.colorMat(locLabel, :), 'filled')
