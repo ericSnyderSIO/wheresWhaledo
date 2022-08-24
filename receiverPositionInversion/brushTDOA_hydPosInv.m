@@ -159,7 +159,7 @@ TDOAbrush.Nrec = size(TDOAbrush.TDOA, 2); % number of receivers
 spd = 60*60*24; % seconds per day
 
 % get cartesian position of ship in relation to receiver:
-[x, y] = latlon2xy(Lat, Lon, TDOAbrush.recLoc(1), TDOAbrush.recLoc(2));
+[x, y] = latlon2xy_wgs84(Lat, Lon, TDOAbrush.recLoc(1), TDOAbrush.recLoc(2));
 
 % adjust ship time stamp for travel time
 R = sqrt(x.^2 + y.^2 + TDOAbrush.recLoc(3).^2); % distance between ship and hydrophone
@@ -205,10 +205,11 @@ H = TDOAbrush.H;
 recPos = TDOAbrush.recPos;
 CI95 = TDOAbrush.CI95;
 recLoc = TDOAbrush.recLoc;
+stdev = TDOAbrush.stdev;
 
 [file,path] = uiputfile('harp4chParams')
 
-save(fullfile(path, file(1:end-7)), 'H', 'recLoc', 'recPos', 'CI95', 'c')
+save(fullfile(path, file(1:end-7)), 'H', 'recLoc', 'recPos', 'CI95', 'c', 'stdev')
 
 end
 
@@ -445,6 +446,7 @@ TDOAbrush.recPos(2, :) = hpos(1:3);
 TDOAbrush.recPos(3, :) = hpos(4:6);
 TDOAbrush.recPos(4, :) = hpos(7:9);
 TDOAbrush.CI95 = CI95;
+TDOAbrush.stdev = stdev;
 
 % plot 3D array elements
 figure('Name', 'Receiver Locations')

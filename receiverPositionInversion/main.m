@@ -1,8 +1,8 @@
 % An example of how to invert for hydrophone positions in a small-aperture 
 % array from the TDOA of known source locations (ship engine sounds)
-
+close all
 %%
-deploymentName = 'SOCAL_E_63_EE';
+deploymentName = 'SOCAL_E_63_EW';
 
 XH = load(['D:\SOCAL_E_63\xwavTables\', deploymentName, '_C4_xwavLookupTable']);
 
@@ -14,7 +14,7 @@ filename = [deploymentName, '_ttgps.txt'];
 save([deploymentName, '_shipLatLon'], 'Lat', 'Lon', 'T')
 
 %% Calculate TDOA
-load([deploymentName, '_shipLatLon.mat'])
+% load([deploymentName, '_shipLatLon.mat'])
 tstart = T(1);
 tend = T(end);
 
@@ -30,7 +30,7 @@ shipStruct = load([deploymentName, '_shipLatLon.mat']);
 
 % close all
 % H = brushDet_hydPosInv('shipTDOA.mat')
-[H, hydPos, CI] = brushTDOA_hydPosInv(TDOAstruct, shipStruct, 'brushTDOA_hydPosInv.params');
+[H, hydPos, CI] = brushTDOA_hydPosInv(TDOAstruct, shipStruct, 'brushTDOA_hydPosInv_SOCAL_E_63_EE.txt');
 
 
 

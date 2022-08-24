@@ -41,8 +41,9 @@ h(2, 3) = ENloc(3)-EEloc(3);
 [h(3, 1), h(3, 2)] = latlon2xy_wgs84(ESloc(1), ESloc(2), EEloc(1), EEloc(2)); % EE location in meters
 h(3, 3) = EWloc(3)-ESloc(3);
 
+hLatLonZ = [EEloc(1:3); EWloc(1:3); ENloc(1:3); ESloc(1:3)]
 note = 'EE is (0,0,0). Each column is [x,y,z] of a HARP. Rows are 1. EW; 2. EN; 3. ES.';
-save('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat', 'h', 'note') 
+save('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat', 'h', 'hLatLonZ', 'note') 
 
 
 
@@ -50,13 +51,15 @@ save('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat', 'h', 'note')
 % calculated in D:\SOCAL_E_63\tracking\experiments\soundSpeedADCP.m
 
 c = 1488.4; % sound speed 
-sig_csml = 0.1345; % std of sound speed
+sig_csml = 0.1345; % std of sound speed at depth
 
-%% Large Ap travel time due to uncertainty in sound speed
+%% Large Ap travel time error due to uncertainty in sound speed
 % calculated in
 % D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\rayBendingError
 
-sig_clrg = .0066;
+% sig_clrg = .0066;
+sig_travelTime = 0.2343;
+sig_clrg = sqrt(sig_travelTime.^2 + sig_csml.^2);
 
 %% Small app TDOA uncertainty due to ray bending
 % calculated in
@@ -66,17 +69,15 @@ sigEW_rayBend = 1.6111e-05;
 
 
 %% Small app hydrophone position uncertainty
-% calculated in:
-% D:\SOCAL_E_63\tracking\experiments\inverseShipLocalization\arrayRPYfromGPS_usingTDOAs_experimentingWithInversion_EE_210518
-% D:\SOCAL_E_63\tracking\experiments\inverseShipLocalization\arrayRPYfromGPS_usingTDOAs_experimentingWithInversion_EW_210518
+% calculated in: \wheresWhaledo\receiverPositionInversion\main.m
 
-sigEE_Hx = 0.1753;
-sigEE_Hy = 0.1696;
-sigEE_Hz = 0.0697;
+sigEE_Hx = 0.1878;
+sigEE_Hy = 0.1849;
+sigEE_Hz = 0.0748;
 sigEE_H = sqrt(sigEE_Hx^2 + sigEE_Hy^2 + sigEE_Hz^2);
 
-sigEW_Hx = 0.1838;
-sigEW_Hy = 0.1855;
+sigEW_Hx = 0.18379;
+sigEW_Hy = 0.18547;
 sigEW_Hz = 0.1236;
 sigEW_H = sqrt(sigEW_Hx^2 + sigEW_Hy^2 + sigEW_Hz^2);
 
@@ -90,8 +91,8 @@ sigEW_drift = drift_std(1);
 sigEN_drift = drift_std(2);
 sigES_drift = drift_std(3);
 %% 
-% sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + c^2*(sigEE_xcorr + sigEE_rayBend)^2)';
-% sigEW_equation = 'sigEW = sqrt(sigEW_H^2 + (TDOA*sig_csml)^2 + c^2*(sigEW_xcorr + sigEW_rayBend)^2)';
+% sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + (c*sigEE_rayBend)^2 + (c*sigEE_xcorr)^2)';
+% sigEW_equation = 'sigEW = sqrt(sigEW_H^2 + (TDOA*sig_csml)^2 + (c*sigEW_rayBend)^2 + (c*sigEW_xcorr)^2)';
 % sigLargeAp_equation = 'sig = sqrt(sigEX_h^2 + sigEY_h^2 + (TDOA+drift)^2sig_clrg + c^2*(sigEX_EY_xcorr^2 + sigEX_drift^2+sigEY_drift^2))';
 
 sigEE_equation = 'sigEE = sqrt(sig2EE*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
@@ -108,7 +109,7 @@ sig2EW(4) = c^2;
 
 % large aperture variance:
 sigLargeAp_equation = 'sig_lrg = sqrt(sum(sig2lrg.*[ones(1,6); (TDOA+drift).^2; ones(1,6); sig_xcov^2]))';
-sigLarge_notes = 'TDOA must be 1'
+
 
 % variance due to hydrophone locations:
 sig2lrg(1, 1) = sigEE_h^2 + sigEW_h^2;

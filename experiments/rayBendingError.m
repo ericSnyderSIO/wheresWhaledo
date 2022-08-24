@@ -46,14 +46,14 @@ plot(ssp, z); axis ij
 
 hz = 1320;
 SD = hz;
-RD = 200:200:1200;
+RD = 200:50:1200;
 
 Mrange = sqrt(M.wloc(:,1).^2+M.wloc(:,2).^2);
-wRanges = 0:200:max(Mrange);
+wRanges = 0:50:max(Mrange);
 NR = length(wRanges);
 RR = wRanges([1, end]);
 
-% makeEnv('D:\MATLAB_addons\gitHub\wheresWhaledo\experiments', 'rayBendingSSP', z, ssp, SD, RD, NR, RR, 'A')
+makeEnv('D:\MATLAB_addons\gitHub\wheresWhaledo\experiments', 'rayBendingSSP', z, ssp, SD, RD, NR, RR, 'A')
 % bellhop('rayBendingSSP')
 
 [Arr, Pos] = read_arrivals_asc('rayBendingSSP.arr');
@@ -177,6 +177,16 @@ hold off
 figure(9); histogram(HARP{1}.travelTimeError(Itt))
 title('Travel Time Error')
 xlabel('Error (s)')
+
+figure(10); 
+% plot(sqrt(sum(HARP{1}.wloc(Itt, :).^2, 2)), HARP{1}.travelTimeError(Itt), '.')
+plot(HARP{1}.wloc(Itt, 3), HARP{1}.travelTimeError(Itt), '.')
+title('Travel Time Error')
+xlabel('range (m)')
+ylabel('error')
+
+sig_travelTime = mean([HARP{1}.travelTimeError, HARP{2}.travelTimeError])
+
 %% Make environtment file
 
 function makeEnv(filepath, filename, z, ssp, SD, RD, NR, RR, modelType)

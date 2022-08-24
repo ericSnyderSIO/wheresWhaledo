@@ -3,10 +3,13 @@ clear all
 
 arrno = 2;  % which array is primary array (must be a 4ch)
 % trackName = '180611_1030';
-trackName = 'track43_180327_084016';                                % base name of track
-trackFolder = 'D:\MATLAB_addons\gitHub\wheresWhaledo\experiments';  % folder containing detection
-saveFolder = 'D:\MATLAB_addons\gitHub\wheresWhaledo\experiments';   % folder where output will be saved
-saveFileName = [trackName, '_CTC_', 'Array', num2str(arrno)]; 
+% trackName = 'track43_180327_084016';                                % base name of track
+% trackName = 'track19_180323_104620';
+% trackName = 'track78_180402_132525';
+trackName = 'track268_180505_123443';
+detFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];  % folder containing detection
+saveFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];   % folder where output will be saved
+saveFileName = [trackName, '_CTC_', 'Array', num2str(arrno)];
 
 
 
@@ -20,31 +23,34 @@ Wk = hann(Nhann);                       % Hanning window used to replace all cli
 maxNumTDOA = 4;                         % maximum possible TDOAs to save per pair per detection
 
 % peaks of click train correlation must be above this value (2*Nhann
-% corresponds to ~2 clicks aligning well in the xcorr step):% 
-minXcorrPeak = 2*Nhann;                 
+% corresponds to ~2 clicks aligning well in the xcorr step):%
+minXcorrPeak = 2*Nhann;
 %% Locate and load detection file
-detDir = dir(fullfile(trackFolder, ['*det*', trackName, '*.mat']));
-load(detDir.name)
+detDir = dir(fullfile(detFolder, ['*det*', trackName, '*.mat']));
+load(fullfile(detDir(1).folder, detDir(1).name))
 
 encounterStart = min(DET{arrno}.TDet);  % Start of encounter
 encounterEnd = max(DET{arrno}.TDet);    % End of encounter
 
 %% Determine if detector needs to be run for single channels
-if numel(DET)==2 % detector has not been run for single channels
+rerunDet=0;
+if (numel(DET)==2)||(rerunDet==1) % detector has not been run for single channels
     % load in xwav tables:
-    xwavTableFile_HARP3 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 3'); % user selects xwavTable
+    %     xwavTableFile_HARP3 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 3'); % user selects xwavTable
+    xwavTableFile_HARP3 = 'D:\SOCAL_E_63\xwavTables\SOCAL_E_63_EN_xwavLookupTable'
     xwavTable3 = load(xwavTableFile_HARP3);
 
     % SOCAL_E_63_EN
-    [DET{3}] = detectClicks_1ch(encounterStart, encounterEnd, xwavTable3, 'detClicks_1ch.params');
+    [DET{3}] = detectClicks_1ch(encounterStart, encounterEnd, xwavTable3.xwavTable, 'detClicks_1ch_tooManyDolphins.params');
 
-    xwavTableFile_HARP4 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 4'); % user selects xwavTable
+%     xwavTableFile_HARP4 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 4'); % user selects xwavTable
+    xwavTableFile_HARP4 = 'D:\SOCAL_E_63\xwavTables\SOCAL_E_63_ES_xwavLookupTable';
     xwavTable4 = load(xwavTableFile_HARP4);
 
     % SOCAL_E_63_ES
-    [DET{4}] = detectClicks_1ch(encounterStart, encounterEnd, xwavTableFile_HARP4, 'detClicks_1ch.params');
+    [DET{4}] = detectClicks_1ch(encounterStart, encounterEnd, xwavTable4.xwavTable, 'detClicks_1ch_tooManyDolphins.params');
 
-    save(detDir.name, 'DET')
+    save(fullfile(detDir(1).folder, detDir(1).name), 'DET')
 
 end
 
@@ -58,15 +64,15 @@ spd = 24*60*60; % seconds per day, convert datenum to seconds
 if arrno==1
     otherArrays = [2,3,4];  % indices of DET containing other arrays besides the primary array
     xcorrCol = [2,3,4];     % Columns of xcorr output used for TDOA calculation
-    
+
     % which hydrophone pairs are used in each TDOA:
-    hpair{1} = '1-2';       
+    hpair{1} = '1-2';
     hpair{2} = '1-3';
     hpair{3} = '1-4';
 elseif arrno==2
     otherArrays = [1,3,4];  % indices of DET containing other arrays besides the primary array
     xcorrCol = [2,7,8];     % Columns of xcorr output used for TDOA calculation
-    
+
     % which hydrophone pairs are used in each TDOA:
     hpair{1} = '1-2';
     hpair{2} = '2-3';
@@ -75,13 +81,13 @@ end
 
 %% remove detections that are too close together
 % If multiple detections fall within one Hanning window, then after
-% convolving the delta functions with the Hanning window the output will be 
+% convolving the delta functions with the Hanning window the output will be
 % >1. This would bias these detections in the cross-correlation and can
 % produce false TDOAs.
 
 % the minimum time difference of arrival allowed to prevent multiple
 % detections falling within one Hanning window:
-mindt = Nhann/fsct; 
+mindt = Nhann/fsct;
 
 % Iterate over each array and remove detections that are too close to
 % preceding detections:
@@ -103,7 +109,7 @@ for wn = unique(DET{arrno}.color).'
     whale{wn-1}.label = ones(length(Ilab), 1); % whale label
 
     for ndet = 1:length(Ilab) % iterate through each detection in primary array
-        
+
         tdet = DET{arrno}.TDet(Ilab(ndet)); % Time of current detection
 
         tstart = tdet - twin/(spd*2);       % window start time
@@ -111,34 +117,34 @@ for wn = unique(DET{arrno}.color).'
 
         tct = tstart:1/(spd*fsct):tend;     % time vector of the click trains
         xct = zeros(length(tct), 4);        % click trains, initialized to zeros
-        
+
         % *****************************************************************
-        % Generate click-train time series for primary array (arrno): 
+        % Generate click-train time series for primary array (arrno):
         % *****************************************************************
 
         % indices of detections within window & labeled as wn:
         Iwn = find(DET{arrno}.TDet>=tstart & DET{arrno}.TDet<=tend & DET{arrno}.color==wn);
-        
+
         for i = 1:length(Iwn) % Iterate over detections and generate click train
             % index of time vector tct that is closest to detection time:
-            [~, ind] = min(abs(tct-DET{arrno}.TDet(Iwn(i)))); 
+            [~, ind] = min(abs(tct-DET{arrno}.TDet(Iwn(i))));
 
             % Replace index of detection in click train with 1 :
             xct(ind, arrno) = 1;
         end
-        
+
         % xct(:, arrno) is now a vector of impulses at detection times.
-        
+
         % Convolve xct with the Hanning window Wk to produce click train
         % used in xcorr:
         xctHann(:, arrno) = conv(Wk, xct(:, arrno)); % click train w/ Hanning windows
 
         % iterate over other arrays and generate click train
         for ia = 1:length(otherArrays)
-            
+
             % Indices of detections within window:
             Iwn = find(DET{otherArrays(ia)}.TDet>=tstart & DET{otherArrays(ia)}.TDet<=tend);
-            
+
             for i = 1:length(Iwn)
                 % index of time vector tct that is closest to detection time:
                 [~, ind] = min(abs(tct-DET{otherArrays(ia)}.TDet(Iwn(i))));
@@ -154,13 +160,13 @@ for wn = unique(DET{arrno}.color).'
             % used in xcorr:
             xctHann(:, otherArrays(ia)) = conv(Wk, xct(:, otherArrays(ia)));
         end
-        
+
         % cross-correlate click trains and calculate TDOAs, peaks of xcorr,
         % and SNR:
         [tdoa, xcpk, snr] = calcTDOA_CTC(xctHann, maxLag, xcorrCol, maxNumTDOA, minXcorrPeak, Nhann, fsct);
-        
+
         whale{wn-1}.TDet(ndet) = tdet;          % Detection time
-        whale{wn-1}.TDOA(ndet, :, :) = tdoa;    % TDOA    
+        whale{wn-1}.TDOA(ndet, :, :) = tdoa;    % TDOA
         whale{wn-1}.XCTpk(ndet, :, :) = xcpk;   % Peak of Xcorr
         whale{wn-1}.SNR(ndet, :, :) = snr;      % SNR
         whale{wn-1}.label(ndet) = wn;           % whale number (label)
@@ -175,17 +181,19 @@ save(fullfile(saveFolder, saveFileName), 'whale') % save data
 fig = figure(3);
 for np = 1:3
     sp(np) = subplot(3, 1, np);
-    for wn = 2:numel(whale)
-        Iplt = find(whale{wn-1}.TDOA(:, np, 1)~=-99); % indices of "good" detections (not set to -99)
-        leg{wn} = ['Whale ', num2str(wn)]; % make legend entry
-        if ~isempty(Iplt) 
+    for wn = 1:numel(whale)
+        if ~isempty(whale{wn})
+            Iplt = find(whale{wn}.TDOA(:, np, 1)~=-99); % indices of "good" detections (not set to -99)
+            leg{wn} = ['Whale ', num2str(wn)]; % make legend entry
+            if ~isempty(Iplt)
 
-            for nt = 1:maxNumTDOA
-                Iplt = find(whale{wn-1}.TDOA(:, np, nt)~=-99);
-                scatter(whale{wn-1}.TDet(Iplt), whale{wn-1}.TDOA(Iplt, np, nt), ...
-                    80.*whale{wn-1}.XCTpk(Iplt, np, nt)./max(max(max(whale{wn-1}.XCTpk))), ...  % Scale each detection by the peak of Xcorr
-                    brushing.params.colorMat(wn, :).*ones(length(Iplt), 3), 'filled'); % assign colors based on label
-                hold on
+                for nt = 1:maxNumTDOA
+                    Iplt = find(whale{wn}.TDOA(:, np, nt)~=-99);
+                    scatter(whale{wn}.TDet(Iplt), whale{wn}.TDOA(Iplt, np, nt), ...
+                        80.*whale{wn}.XCTpk(Iplt, np, nt)./max(max(max(whale{wn}.XCTpk))), ...  % Scale each detection by the peak of Xcorr
+                        brushing.params.colorMat(wn+1, :).*ones(length(Iplt), 3), 'filled'); % assign colors based on label
+                    hold on
+                end
             end
         end
     end
@@ -196,8 +204,8 @@ for np = 1:3
     xlim([encounterStart, encounterEnd])
     datetick
 end
-figure('Colormap', brushing.params.colorMat)
-colorbar
+% fig('Colormap', brushing.params.colorMat)
+% colorbar
 
 
 saveas(fig, fullfile(saveFolder, saveFileName), 'fig') % save figure

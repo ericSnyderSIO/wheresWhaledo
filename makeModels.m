@@ -1,20 +1,5 @@
-% build TDOA model
-
-% hewLL = [32.65646  -119.48815 -1330.1631];
-% heeLL = [32.65879  -119.47705 -1319.6305];
-% henLL = [32.66221  -119.48424 -1321.2775];
-% hesLL = [32.65352  -119.48446 -1331.3959];
-% 
-% hoLL = mean([hewLL; heeLL; henLL; hesLL]);
-% 
-% [hew(1), hew(2)] = latlon2xy(hewLL(1), hewLL(2), hoLL(1), hoLL(2));
-% hew(3) = hewLL(3)-hoLL(3);
-% [hee(1), hee(2)] = latlon2xy(heeLL(1), heeLL(2), hoLL(1), hoLL(2));
-% hee(3) = heeLL(3)-hoLL(3);
-% [hen(1), hen(2)] = latlon2xy(henLL(1), henLL(2), hoLL(1), hoLL(2));
-% hen(3) = henLL(3)-hoLL(3);
-% [hes(1), hes(2)] = latlon2xy(hesLL(1), hesLL(2), hoLL(1), hoLL(2));
-% hes(3) = hesLL(3)-hoLL(3);
+clear all
+% build TDOA model with non-uniform grid sizes
 
 load('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat')  % calculated in D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\calcSigma.m
 
@@ -24,81 +9,116 @@ hen = h(2,:);
 hes = h(3,:);
 
 
-hyd1 = load('D:\SOCAL_E_63\tracking\experiments\inverseProblem\matfiles\SOCAL_E_63_EE_Hmatrix_fromHydLocInversion_210702.mat')
-hyd2 = load('D:\SOCAL_E_63\tracking\experiments\inverseProblem\matfiles\SOCAL_E_63_EW_Hmatrix_fromHydLocInversion_210702.mat')
+hyd1 = load('D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\SOCAL_E_63_EE_Hmatrix_new.mat');
+hyd2 = load('D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\SOCAL_E_63_EW_Hmatrix_new.mat');
 
 % HEW = H;
 
 % Reorder hydrophones to fit new TDOA order
 HEE = [hyd1.hydPos(2,:)-hyd1.hydPos(1,:);
-         hyd1.hydPos(3,:)-hyd1.hydPos(1,:);
-         hyd1.hydPos(4,:)-hyd1.hydPos(1,:);
-         hyd1.hydPos(3,:)-hyd1.hydPos(2,:);
-         hyd1.hydPos(4,:)-hyd1.hydPos(2,:);
-         hyd1.hydPos(4,:)-hyd1.hydPos(3,:)];
-     
-HEW = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
-         hyd2.hydPos(3,:)-hyd2.hydPos(1,:);
-         hyd2.hydPos(4,:)-hyd2.hydPos(1,:);
-         hyd2.hydPos(3,:)-hyd2.hydPos(2,:);
-         hyd2.hydPos(4,:)-hyd2.hydPos(2,:);
-         hyd2.hydPos(4,:)-hyd2.hydPos(3,:)];
+    hyd1.hydPos(3,:)-hyd1.hydPos(1,:);
+    hyd1.hydPos(4,:)-hyd1.hydPos(1,:);
+    hyd1.hydPos(3,:)-hyd1.hydPos(2,:);
+    hyd1.hydPos(4,:)-hyd1.hydPos(2,:);
+    hyd1.hydPos(4,:)-hyd1.hydPos(3,:)];
 
-c = 1488.4;
+HEE = hyd1.H;
+
+HEW = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(3,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(3,:)-hyd2.hydPos(2,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(2,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(3,:)];
+
+% c = 1488.4;
+% c = 1485;
+c = 1488.4
+csml = 1488.4;
 
 %% coarse resolution
 
-coarseRes = 200; % grid size in coarse grid
+dx = 100;
+dy = 100;
+dz = 20;
 
-xvecCoarse = -4500:coarseRes:3500;
-yvecCoarse = -4000:coarseRes:4000;
-zvecCoarse = -coarseRes:coarseRes:1400; % height above array
+xvecCoarse = -4500:dx:3500;
+yvecCoarse = -4000:dy:4000;
+zvecCoarse = -dz:dz:1000; % height above array
 
 wloc = zeros(length(xvecCoarse)*length(yvecCoarse)*length(zvecCoarse), 3);
-TDOA = zeros(length(xvecCoarse)*length(yvecCoarse)*length(zvecCoarse), 18);
-n = 0;
+% make wloc vector:
+% this method just iterates over each grid point and assigns the value to
+% wloc. It's easier to understand, but about 2x slower than the method that
+% isn't commented out.
+% tic
+% n = 0;
+% for nx = 1:length(xvecCoarse)
+%     for ny = 1:length(yvecCoarse)
+%         for nz = 1:length(zvecCoarse)
+%             n = n+1;
+%             wloc(n, :) = [xvecCoarse(nx), yvecCoarse(ny), zvecCoarse(nz)];
+%         end
+%     end
+% end
+% toc
+
+tic
+% fill in x positions:
+indShift = 0;
 for nx = 1:length(xvecCoarse)
-    for ny = 1:length(yvecCoarse)
-        for nz = 1:length(zvecCoarse)
-            n = n+1;
-            wloc(n, :) = [xvecCoarse(nx), yvecCoarse(ny), zvecCoarse(nz)];
-            
-            % find received time if source time is 0:
-            see = wloc(n,:) - hee;
-            ree = sqrt(sum(see.^2));
-            see = see./ree;
-            tee = ree/c;
-            
-            sew = wloc(n,:) - hew;
-            rew = sqrt(sum(sew.^2));
-            sew = sew./rew;
-            tew = rew/c;
-            
-            sen = wloc(n,:) - hen;
-            ren = sqrt(sum(sen.^2));
-            ten = ren/c;
-            
-            ses = wloc(n,:) - hes;
-            res = sqrt(sum(ses.^2));
-            tes = res/c;
-            
-            TDOA(n, 1:6) = (HEE*see.')./c; % small aperture TDOA for EE
-            TDOA(n, 7:12) = (HEW*sew.')./c; % small aperture TDOA for EW
-            % large aperture TDOAs:
-            TDOA(n, 13) = tee - tew;
-            TDOA(n, 14) = tee - ten;
-            TDOA(n, 15) = tee - tes;
-            TDOA(n, 16) = tew - ten;
-            TDOA(n, 17) = tew - tes;
-            TDOA(n, 18) = ten - tes;
-            
-        end
-    end
-    
+    Ind = 1:length(yvecCoarse)*length(zvecCoarse); % indices to be filled with xvecCoarse(nx)
+    Ind = Ind + indShift;
+    wloc(Ind, 1) = xvecCoarse(nx);
+
+    indShift = indShift + length(Ind);
+
 end
 
+indShift = 0;
+for ny = 1:length(yvecCoarse)
+    Ind = 1:length(zvecCoarse); % indices of first occurance of yvecCoarse(ny)
+    Ind = Ind + indShift;
+    ypart(Ind) = yvecCoarse(ny); % vector of first occurance of yvecCoarse(ny), i.e. y vector associated with xvecCoarse(1)
+    indShift = indShift + length(Ind);
+end
+wloc(:, 2) = repmat(ypart.', [length(xvecCoarse), 1]);
+wloc(:, 3) = repmat(zvecCoarse.', [length(wloc)/length(zvecCoarse), 1]);
+toc
+TDOA = zeros(length(xvecCoarse)*length(yvecCoarse)*length(zvecCoarse), 18);
 
-save('B:\TDOAmodel_200m', 'TDOA', 'wloc')
+
+% find received time if source time is 0:
+see = wloc - hee;
+ree = sqrt(sum(see.^2, 2));
+see = see./ree;
+
+sew = wloc - hew;
+rew = sqrt(sum(sew.^2, 2));
+sew = sew./rew;
+
+sen = wloc - hen;
+ren = sqrt(sum(sen.^2, 2));
+
+ses = wloc - hes;
+res = sqrt(sum(ses.^2, 2));
+
+TDOA(:, 1:6) = (-see*HEE.')./csml; % small aperture TDOA for EE
+TDOA(:, 7:12) = (-sew*HEW.')./csml; % small aperture TDOA for EW
+
+% large aperture TDOAs:
+TDOA(:, 13) = (ree - rew)./c;
+TDOA(:, 14) = (ree - ren)./c;
+TDOA(:, 15) = (ree - res)./c;
+TDOA(:, 16) = (rew - ren)./c;
+TDOA(:, 17) = (rew - res)./c;
+TDOA(:, 18) = (ren - res)./c;
+
+
+
+save(['B:\TDOAmodel_', num2str(dx), 'dx', num2str(dy), 'dy', num2str(dz), 'dz'], 'TDOA', 'wloc')
+
+toc
 
 %% 10 m resolution
 
@@ -110,58 +130,65 @@ fineRes = 10;
 % 100m resolution whale loc
 
 
-for nCoarse = 1:length(wlocCoarse)
-        
-    xvecFine = (wlocCoarse(nCoarse, 1)-2*coarseRes):fineRes:(wlocCoarse(nCoarse, 1)+2*coarseRes);
-    yvecFine = (wlocCoarse(nCoarse, 2)-2*coarseRes):fineRes:(wlocCoarse(nCoarse, 2)+2*coarseRes);
-    zvecFine = (wlocCoarse(nCoarse, 3)-2*coarseRes):fineRes:(wlocCoarse(nCoarse, 3)+2*coarseRes);
-    
+for nCoarse = 1:length(wlocCoarse) % iterate over each grid point in coarse wloc
+
+    xvecFine = (wlocCoarse(nCoarse, 1)-2*dx):fineRes:(wlocCoarse(nCoarse, 1)+2*dx);
+    yvecFine = (wlocCoarse(nCoarse, 2)-2*dy):fineRes:(wlocCoarse(nCoarse, 2)+2*dy);
+    zvecFine = (wlocCoarse(nCoarse, 3)-2*dz):fineRes:(wlocCoarse(nCoarse, 3)+2*dz);
+
     wloc = zeros(length(xvecFine)*length(yvecFine)*length(zvecFine), 3);
     TDOA = zeros(length(xvecFine)*length(yvecFine)*length(zvecFine), 18);
     n = 0;
-    
+
+    indShift = 0;
     for nx = 1:length(xvecFine)
-        for ny = 1:length(yvecFine)
-            for nz = 1:length(zvecFine)
-                n = n+1;
-                wloc(n, :) = [xvecFine(nx), yvecFine(ny), zvecFine(nz)];
-                
-                % find received time assuming source time is 0:
-                see = wloc(n,:) - hee;
-                ree = sqrt(sum(see.^2));
-                see = see./ree;
-                tee = ree/c; % received time EE
-                
-                sew = wloc(n,:) - hew;
-                rew = sqrt(sum(sew.^2));
-                sew = sew./rew;
-                tew = rew/c;
-                
-                sen = wloc(n,:) - hen;
-                ren = sqrt(sum(sen.^2));
-                ten = ren/c;
-                
-                ses = wloc(n,:) - hes;
-                res = sqrt(sum(ses.^2));
-                tes = res/c;
-                
-                TDOA(n, 1:6) = (HEE*see.')./c; % small aperture TDOA for EE
-                TDOA(n, 7:12) = (HEW*sew.')./c; % small aperture TDOA for EE
-                % large aperture TDOAs:
-                TDOA(n, 13) = tee - tew;
-                TDOA(n, 14) = tee - ten;
-                TDOA(n, 15) = tee - tes;
-                TDOA(n, 16) = tew - ten;
-                TDOA(n, 17) = tew - tes;
-                TDOA(n, 18) = ten - tes;
-                
-            end
-        end
-        
+        Ind = 1:length(yvecFine)*length(zvecFine); % indices to be filled with xvecFine(nx)
+        Ind = Ind + indShift;
+        wloc(Ind, 1) = xvecFine(nx);
+
+        indShift = indShift + length(Ind);
+
     end
-    
-    
-    save(['B:\modelFiles_10mFrom200m\TDOAmodel_10m_n=', sprintf('%05d', nCoarse)], 'TDOA', 'wloc')
+
+    indShift = 0;
+    for ny = 1:length(yvecFine)
+        Ind = 1:length(zvecFine); % indices of first occurance of yvecFine(ny)
+        Ind = Ind + indShift;
+        ypart(Ind) = yvecFine(ny); % vector of first occurance of yvecFine(ny), i.e. y vector associated with xvecFine(1)
+        indShift = indShift + length(Ind);
+    end
+    wloc(:, 2) = repmat(ypart.', [length(xvecFine), 1]);
+    wloc(:, 3) = repmat(zvecFine.', [length(wloc)/length(zvecFine), 1]);
+    toc
+    TDOA = zeros(length(xvecFine)*length(yvecFine)*length(zvecFine), 18);
+
+    % find received time if source time is 0:
+    see = wloc - hee;
+    ree = sqrt(sum(see.^2, 2));
+    see = see./ree;
+
+    sew = wloc - hew;
+    rew = sqrt(sum(sew.^2, 2));
+    sew = sew./rew;
+
+    sen = wloc - hen;
+    ren = sqrt(sum(sen.^2, 2));
+
+    ses = wloc - hes;
+    res = sqrt(sum(ses.^2, 2));
+
+    TDOA(:, 1:6) = (see*HEE.')./c; % small aperture TDOA for EE
+    TDOA(:, 7:12) = (sew*HEW.')./c; % small aperture TDOA for EW
+
+    % large aperture TDOAs:
+    TDOA(:, 13) = (ree - rew)./c;
+    TDOA(:, 14) = (ree - ren)./c;
+    TDOA(:, 15) = (ree - res)./c;
+    TDOA(:, 16) = (rew - ren)./c;
+    TDOA(:, 17) = (rew - res)./c;
+    TDOA(:, 18) = (ren - res)./c;
+
+    save(['B:\modelFiles_10mFromVariableGridSize\TDOAmodel_10m_n=', sprintf('%05d', nCoarse)], 'TDOA', 'wloc')
 end
 
 
