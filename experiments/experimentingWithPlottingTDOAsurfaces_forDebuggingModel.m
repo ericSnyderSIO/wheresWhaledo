@@ -16,13 +16,14 @@ saveFileName = [trackName, '_loc_', 'Array', num2str(arrno)];
 
 % load drift data:
 load('D:\SOCAL_E_63\xwavTables\drift') % drift (sec) and tdrift (datenum) for EW, EN, ES relative to EE
-
+altDrift = load('D:\SOCAL_E_63\tracking\experiments\clockSync\drift_ADCPonly.mat');
 % load partial sigma values
 load('D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\sigmaValues.mat')
 
 % load coarse grid model:
 % Mcoarse = load('B:\TDOAmodel_200dx200dy50dz.mat');
 Mcoarse = load('B:\TDOAmodel_100dx100dy20dz.mat');
+% Mcoarse = load('B:\TDOAmodel_40dx40dy20dz.mat');
 % Mcoarse = load('B:\TDOAmodel_100m')
 % Mcoarse = load('B:\model_bellhop.mat');
 Mcoarse.TDOA(:, 1:12) = -Mcoarse.TDOA(:, 1:12);
@@ -133,18 +134,44 @@ EWrec = [32.65632	-119.48814	-1323.6842];
 EWdiff = sqrt(EWx^2 + EWy^2 + (EWdep(3)-EWrec(3)).^2);
 EWloc = mean([EWdep(1:3); EWrec(1:3)]);
 
-hydLoc{1} = EEloc;
-hydLoc{2} = EWloc;
 
-whaleLocDOA = loc3D_DOAintersect(DET, hydLoc, 'brushing.params', 'interpOff')
+hyd1 = load('D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\SOCAL_E_63_EE_Hmatrix_new.mat');
+hyd2 = load('D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\SOCAL_E_63_EW_Hmatrix_new.mat');
 
-% correct for center of model being at EE instead of midway between EE and EW
-h0 = mean([hydLoc{1}; hydLoc{2}]);
-[hShift(1), hShift(2)] = latlon2xy_wgs84(hydLoc{1}(1), hydLoc{1}(2), h0(1), h0(2));
-hShift(3) = h0(3)-hydLoc{1}(3);
-for wn = 1:numel(whaleLocDOA)
-    whaleLocDOA{wn}.xyz = whaleLocDOA{wn}.xyz - hShift;
-end
+% HEW = H;
+
+% Reorder hydrophones to fit new TDOA order
+HEE = [hyd1.recPos(2,:)-hyd1.recPos(1,:);
+    hyd1.recPos(3,:)-hyd1.recPos(1,:);
+    hyd1.recPos(4,:)-hyd1.recPos(1,:);
+    hyd1.recPos(3,:)-hyd1.recPos(2,:);
+    hyd1.recPos(4,:)-hyd1.recPos(2,:);
+    hyd1.recPos(4,:)-hyd1.recPos(3,:)];
+
+HEE = hyd1.H;
+
+HEW = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(3,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(1,:);
+    hyd2.hydPos(3,:)-hyd2.hydPos(2,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(2,:);
+    hyd2.hydPos(4,:)-hyd2.hydPos(3,:)];
+
+c = 1488.4;
+
+
+% hydLoc{1} = EEloc;
+% hydLoc{2} = EWloc;
+%
+% whaleLocDOA = loc3D_DOAintersect(DET, hydLoc, 'brushing.params', 'interpOff')
+%
+% % correct for center of model being at EE instead of midway between EE and EW
+% h0 = mean([hydLoc{1}; hydLoc{2}]);
+% [hShift(1), hShift(2)] = latlon2xy_wgs84(hydLoc{1}(1), hydLoc{1}(2), h0(1), h0(2));
+% hShift(3) = h0(3)-hydLoc{1}(3);
+% for wn = 1:numel(whaleLocDOA)
+%     whaleLocDOA{wn}.xyz = whaleLocDOA{wn}.xyz - hShift;
+% end
 %% Iterate through whales, each detection, then Localize
 
 xu = unique(Mcoarse.wloc(:, 1));
@@ -170,6 +197,7 @@ figure(1)
 for wn = 1:numel(whale)
     if ~isempty(whale{wn})
         Iuse = find(sum(whale{wn}.IndUsed, 2)>=7);
+
         if ~isempty(Iuse)
             for ndet = 1:length(Iuse)
 
@@ -204,6 +232,34 @@ for wn = 1:numel(whale)
             end
 
         end
+
+        % calculate DOA intersect for detections on both 4ch
+        Idoa = find(sum(whale{wn}.IndUsed(:, 1:12), 2)==12); % find where DOA intersect can be used
+
+        if ~isempty(Idoa)
+            whaleLocDOA{wn}.xyz = zeros(length(Idoa), 3);
+            whaleLocDOA{wn}.t = zeros(length(Idoa), 1);
+
+            for idoa = 1:length(Idoa)
+                tdoa1 = whale{wn}.TDOA(Idoa(idoa), 1:6);
+                tdoa2 = whale{wn}.TDOA(Idoa(idoa), 7:12);
+
+                doa1 = (tdoa1.'.*c)\HEE;
+                doa2 = (tdoa2.'.*c)\HEW;
+
+                D = [doa1; -doa2];
+                R = D.'\(h(2, :) - h(1, :)).';
+
+                w1 = R(1).*doa1 + h(1, :);
+                w2 = R(2).*doa2 + h(2, :);
+
+                wloc = (w1+w2)./2;
+                whaleLocDOA{wn}.xyz(idoa, :) = wloc;
+                whaleLocDOA{wn}.t(idoa) = whale{wn}.TDet(Idoa(idoa));
+                
+            end
+            whaleLocDOA{wn}.color = wn+2;
+        end
     end
 end
 
@@ -217,56 +273,62 @@ for wn = 1:numel(tempwhale)
 end
 
 for wn = 1:min([numel(tempwhale), numel(whaleLocDOA)])
-    colNum = whaleLocDOA{wn}.color;
-    Itw = find(tempwhaleLabel==colNum);
+    if ~ isempty(whaleLocDOA{wn}) && ~isempty(tempwhale{wn})
+        colNum = whaleLocDOA{wn}.color;
+        
+        % marker sizes:
+        sz = 10 + 50.*(tempwhale{wn}.likelihood-min(tempwhale{wn}.likelihood))./max((tempwhale{wn}.likelihood-min(tempwhale{wn}.likelihood)));
+        colmat = brushing.params.colorMat(colNum, :).*ones(size(tempwhale{wn}.wloc18_coarse));
 
-    % marker sizes:
-    sz = 2 + 50.*(tempwhale{Itw}.likelihood-min(tempwhale{Itw}.likelihood))./max((tempwhale{Itw}.likelihood-min(tempwhale{Itw}.likelihood)));
-    colmat = brushing.params.colorMat(colNum, :).*ones(size(tempwhale{Itw}.wloc18_coarse));
+        fig = figure(10+wn);
+        subplot(3,2,1)
+        scatter(tempwhale{wn}.TDet, tempwhale{wn}.wloc18_coarse(:, 1), sz, colmat, 'filled')
+        hold on
+        plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 1), 'kx')
+        hold off
+        title('x')
+        grid on
+        xlim([min(tempwhale{wn}.TDet), max(tempwhale{wn}.TDet)])
+        datetick('x', 'keeplimits')
 
-    fig = figure(10+wn);
-    subplot(3,2,1)
-    plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 1), 'x', 'color', brushing.params.colorMat(colNum, :))
-    hold on
-    scatter(tempwhale{Itw}.TDet, tempwhale{Itw}.wloc18_coarse(:, 1), sz, colmat, 'filled')
-    hold off
-    title('x')
-    grid on
-    datetick
+        subplot(3,2,3)
+        scatter(tempwhale{wn}.TDet, tempwhale{wn}.wloc18_coarse(:, 2), sz, colmat, 'filled')
+        hold on
+        plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 2), 'kx')
+        hold off
+        title('y')
+        grid on
+        xlim([min(tempwhale{wn}.TDet), max(tempwhale{wn}.TDet)])
+        datetick('x', 'keeplimits')
 
-    subplot(3,2,3)
-    plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 2), 'x', 'color', brushing.params.colorMat(colNum, :))
-    hold on
-    scatter(tempwhale{Itw}.TDet, tempwhale{Itw}.wloc18_coarse(:, 2), sz, colmat, 'filled')
-    hold off
-    title('y')
-    grid on
-    datetick
+        subplot(3,2,5)
+        scatter(tempwhale{wn}.TDet, tempwhale{wn}.wloc18_coarse(:, 3), sz, colmat, 'filled')
+        hold on
+        plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 3), 'kx')
+        hold off
+        title('z')
+        xlim([min(tempwhale{wn}.TDet), max(tempwhale{wn}.TDet)])
+        grid on
+        datetick('x', 'keeplimits')
 
-    subplot(3,2,5)
-    plot(whaleLocDOA{wn}.t, whaleLocDOA{wn}.xyz(:, 3), 'x', 'color', brushing.params.colorMat(colNum, :))
-    hold on
-    scatter(tempwhale{Itw}.TDet, tempwhale{Itw}.wloc18_coarse(:, 3), sz, colmat, 'filled')
-    hold off
-    title('z')
-    grid on
-    datetick
-
-    subplot(3,2, [2,4,6])
-    plot3(whaleLocDOA{wn}.xyz(:, 1), whaleLocDOA{wn}.xyz(:, 2), whaleLocDOA{wn}.xyz(:, 3), 'x', 'color', brushing.params.colorMat(colNum, :));
-    hold on
-    scatter3(tempwhale{Itw}.wloc18_coarse(:, 1), tempwhale{Itw}.wloc18_coarse(:, 2), tempwhale{Itw}.wloc18_coarse(:, 3), ...
-        sz, colmat, 'filled');
-    scatter3(h(:, 1), h(:, 2), h(:, 3), 'sk')
-    hold off
-    legend('DOA intersect', 'TDOA model', 'location', 'southoutside')
-    grid on
-    xlabel('x')
-    ylabel('y')
-    zlabel('z')
-    title(['whale ', num2str(wn)])
-    fig.WindowState='maximized'
-    saveas(fig, ['C:\Users\HARP\Desktop\weeklyMeetings\220813\whaleLoc', trackName,'_array', num2str(arrno), '_whale', num2str(colNum-2)])
+        subplot(3,2, [2,4,6])
+        plot3(whaleLocDOA{wn}.xyz(:, 1), whaleLocDOA{wn}.xyz(:, 2), whaleLocDOA{wn}.xyz(:, 3), 'kx');
+        hold on
+        scatter3(tempwhale{wn}.wloc18_coarse(:, 1), tempwhale{wn}.wloc18_coarse(:, 2), tempwhale{wn}.wloc18_coarse(:, 3), ...
+            sz, colmat, 'filled');
+        scatter3(h(:, 1), h(:, 2), h(:, 3), 'sk')
+        hold off
+        legend('DOA intersect', 'TDOA model', 'location', 'southoutside')
+        grid on
+        xlabel('x')
+        ylabel('y')
+        zlabel('z')
+        title(['whale ', num2str(wn)])
+        axis([-4500, 4500, -4500, 4500, -200, 1000])
+        pbaspect([1,1,1])
+        fig.WindowState='maximized';
+        saveas(fig, ['C:\Users\HARP\Desktop\weeklyMeetings\220813\whaleLoc', trackName,'_array', num2str(arrno), '_whale', num2str(colNum-2)])
+    end
 end
 
 
@@ -296,9 +358,10 @@ HEW = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
 c = 1488.4;
 
 wn = 2;
-I = find(tempwhale{wn}.likelihood==18);
-ndet = I(2);
-
+% I = find(tempwhale{wn}.likelihood==12);
+% ndet = I(1);
+% ndet = 163
+ndet=1;
 % calculate drift
 % Calculate drift:
 for idrift = 1:3
@@ -308,7 +371,8 @@ driftCorrection(4) = driftCorrection(2) - driftCorrection(1);
 driftCorrection(5) = driftCorrection(3) - driftCorrection(1);
 driftCorrection(6) = driftCorrection(3) - driftCorrection(2);
 
-figure(21)
+fig = figure(21);
+set(fig,'units','normalized','outerposition',[0 0 1 1])
 
 [X, Y, Z] = meshgrid(-5000:100:5000, -5000:100:5000, -100:20:1000);
 
@@ -436,15 +500,18 @@ for wn = 1:numel(tempwhale)
                 %     plot(tempwhale{wn}.expTDOA(Ind, sp + 12))
                 %     hold off
                 histogram(abs(tempwhale{wn}.TDOA(Ind, sp+12)-tempwhale{wn}.expTDOA(Ind, sp+12)), ...
-                    'BinWidth', .001)
+                    'BinWidth', .0001)
                 hold on
                 stem(abs(driftCorrection(sp)), 5)
                 hold off
-                title(['TDOA error, pair ', num2str(sp)])
-                xlim([0, .1])
+                title(['TDOA error, pair ', num2str(sp), '; whale ', num2str(wn)])
+                %                 xlim([0, .1])
 
             end
             legend('TDOA error', 'drift correction')
         end
     end
 end
+
+%% Try undoing drift correction and adding in altDrift correction:
+

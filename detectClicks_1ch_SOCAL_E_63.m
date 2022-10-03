@@ -1,4 +1,4 @@
-function [detTable] = detectClicks_1ch(tstart, tend, XH, paramFile)
+function [detTable] = detectClicks_1ch_SOCAL_E_63(tstart, tend, XH, paramFile)
 % the typical detector, but with the ADCP pings removed
 
 global detParam
@@ -23,7 +23,7 @@ detTable = table;
 idet = 1; % counter for number of detections
 
 while t2<=tend
-    [x, t] = readxwavSegment(t1, t2, XH);
+    [x, t] = quickxwavRead(t1, t2, detParam.fs, XH);
     
     xf = filtfilt(b, a, x);
 
