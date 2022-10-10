@@ -7,11 +7,11 @@ end
 fig.Position = brushing.params.commandLegendPos;
 
 
-keystrokes = {'0', '1-8', 'd', 'z', 'x', 'a', 'u'};
-functs = {'remove label', 'label as #1-8', 'delete', 'zoom ON', 'zoom OFF', 'associate', 'undo'};
+keystrokes = {'0', '1-8', 'd', 'z', 'x', 'r', 'a', 'u'};
+functs = {'remove label', 'label as #1-8', 'delete', 'zoom ON', 'zoom OFF', 'reset zoom', 'associate', 'undo'};
 
-vertLines = [0, 2, 8];
 horzLines = 1:numel(keystrokes);
+vertLines = [0, 2, length(horzLines) + 1];
 
 xdata = [1, 5];
 ydata = (1:numel(keystrokes)) + .5;
@@ -19,7 +19,7 @@ ydata = (1:numel(keystrokes)) + .5;
 axis ij
 hold on
 for i = 1:length(vertLines)
-    plot([vertLines(i),vertLines(i)], [1, 8], 'k')
+    plot([vertLines(i),vertLines(i)], [1, length(horzLines) + 1], 'k')
 end
 for i = 1:length(horzLines)
     plot([0, 8], [horzLines(i),horzLines(i)], 'k')
@@ -34,7 +34,7 @@ fig.Children.XTick = [];
 fig.Children.YTick = [];
 
 xlim([0, 8]);
-ylim([1, 8])
+ylim([1, length(horzLines) + 1])
 hold off
 
 
