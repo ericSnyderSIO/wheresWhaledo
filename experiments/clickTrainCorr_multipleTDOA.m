@@ -1,4 +1,17 @@
 
+clear all
+%% User inputs:
+
+arrno = 2;  % which array is primary array (must be a 4ch)
+% trackName = '180611_1030';
+% trackName = 'track43_180327_084016';                                % base name of track
+% trackName = 'track19_180323_104620';
+% trackName = 'track78_180402_132525';
+trackName = 'track268_180505_123443';
+detFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];  % folder containing detection
+saveFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];   % folder where output will be saved
+saveFileName = [trackName, '_CTC_', 'Array', num2str(arrno)];
+
 function clickTrainCorr_multipleTDOA(trackName, foldername, arrno)
 
 saveFileName = [trackName, '_CTC_', 'Array', num2str(arrno)];
@@ -16,8 +29,12 @@ maxNumTDOA = 4;                         % maximum possible TDOAs to save per pai
 % corresponds to ~2 clicks aligning well in the xcorr step):%
 minXcorrPeak = 2*Nhann;
 %% Locate and load detection file
+
 detDir = dir(fullfile(foldername, ['*det*', trackName, '*.mat']));
 load(fullfile(detDir.folder, detDir.name))
+=======
+detDir = dir(fullfile(detFolder, ['*det*', trackName, '*.mat']));
+load(fullfile(detDir(1).folder, detDir(1).name))
 
 encounterStart = min(DET{arrno}.TDet);  % Start of encounter
 encounterEnd = max(DET{arrno}.TDet);    % End of encounter
@@ -33,7 +50,11 @@ if (numel(DET)==2)||(rerunDet==1) % detector has not been run for single channel
     % SOCAL_E_63_EN
     [DET{3}] = detectClicks_1ch(encounterStart, encounterEnd, xwavTable3.xwavTable, 'detClicks_1ch_tooManyDolphins.params');
 
+
     %     xwavTableFile_HARP4 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 4'); % user selects xwavTable
+
+%     xwavTableFile_HARP4 = uigetfile('*.mat', 'Select XWAV Lookup Table for HARP 4'); % user selects xwavTable
+
     xwavTableFile_HARP4 = 'D:\SOCAL_E_63\xwavTables\SOCAL_E_63_ES_xwavLookupTable';
     xwavTable4 = load(xwavTableFile_HARP4);
 

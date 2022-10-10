@@ -331,6 +331,57 @@ else % if input is letter, perform associated function
                     set(source.Children(isp).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
                 end
             end
+
+        case 'a'
+            Arrstruct = inputdlg('Enter labeled array (''1'' or ''2''):', 'Associate whales');
+            labeledInstnum = str2double(Arrstruct{1});
+            
+            if labeledInstnum==1
+                unlabeledInstnum = 2;
+            elseif labeledInstnum==2
+                unlabeledInstnum = 1;
+            end
+
+            whalenum = inputdlg('Enter whale number to associate(a number, or ''a'' for all): ', 'Associate whales');
+            
+            if strcmp(whalenum{1}, 'a') % process all whales
+                wnums = unique(DET{labeledInstnum}.color);
+                wnums(wnums==2) = []; % remove 'unlabeled'
+                for wn = 1:length(wnums)
+                    DET = whaleAss(DET, labeledInstnum, unlabeledInstnum, wnums(wn)-2);
+                    
+                end
+            else % process only specified whale
+                wn = str2double(whalenum{1});
+                DET = whaleAss(DET, labeledInstnum, unlabeledInstnum, wn);
+            end
+
+            if unlabeledInstnum==1
+                % update array 1 plots
+
+                % update az vs el plot
+                set(source.Children(4).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :))
+
+
+                % update t vs el plot
+                set(source.Children(5).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :))
+
+                % update t vs az plot
+                set(source.Children(6).Children, 'cdata', brushing.params.colorMat(DET{1}.('color'), :))
+
+            elseif unlabeledInstnum==2
+                % update array 2 plots
+                % update az vs el plot
+                set(source.Children(1).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
+
+                % update t vs el plot
+                set(source.Children(2).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
+
+                % update t vs az plot
+                set(source.Children(3).Children, 'cdata', brushing.params.colorMat(DET{2}.('color'), :))
+            end
+
+
         case 'z' % toggle zoom on
 
             % enable zoom functionality

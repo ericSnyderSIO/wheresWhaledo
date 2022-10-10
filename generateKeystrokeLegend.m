@@ -7,8 +7,8 @@ end
 fig.Position = brushing.params.commandLegendPos;
 
 
-keystrokes = {'0', '1-8', 'b', 'd', 'z', 'x', 'n'};
-functs = {'remove label', 'label as #1-8', 'label as ''buzz''', 'Delete', 'zoom ON', 'zoom OFF', 'new detection'};
+keystrokes = {'0', '1-8', 'd', 'z', 'x', 'a', 'u'};
+functs = {'remove label', 'label as #1-8', 'delete', 'zoom ON', 'zoom OFF', 'associate', 'undo'};
 
 vertLines = [0, 2, 8];
 horzLines = 1:numel(keystrokes);
