@@ -4,7 +4,7 @@ global detParam
 loadParams(paramFile)
 
 spd = 60*60*24;
-detParam.twintwin = 30; % 30 second window;
+detParam.twin = 30; % 30 second window;
 
 t1 = tstart;
 t2 = t1 + detParam.twin/spd;
@@ -26,7 +26,7 @@ detTable.('DAmp') = zeros(10000, 1);
 detTable.('TDet') = zeros(10000, 1);
 
 while t2<=tend
-    [x, t] = readxwavSegment(t1, t2, XH);
+    [x, t] = quickxwavRead(t1, t2, detParam.fs, XH);
     
     xf = filtfilt(b, a, x);
     if max(xf)>=detParam.th
