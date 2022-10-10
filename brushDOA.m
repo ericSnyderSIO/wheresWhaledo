@@ -66,11 +66,11 @@ ms = 6; % marker size
 mmtime(1) = min([DET{1}.('TDet'); DET{2}.('TDet')]); % minimum time axis value
 mmtime(2) = max([DET{1}.('TDet'); DET{2}.('TDet')]); % maximum time axis value
 
-mmAz(1) = min([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % minimum time axis value
-mmAz(2) = max([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % maximum time axis value
+mmAz(1) = min([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % minimum az axis value
+mmAz(2) = max([DET{1}.('Ang')(:,1); DET{2}.('Ang')(:,1)]); % maximum az axis value
 
-mmEl(1) = min([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % minimum time axis value
-mmEl(2) = max([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % maximum time axis value
+mmEl(1) = min([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % minimum el axis value
+mmEl(2) = max([DET{1}.('Ang')(:,2); DET{2}.('Ang')(:,2)]); % maximum el axis value
 
 
 % plot Array 1
@@ -407,6 +407,34 @@ else % if input is letter, perform associated function
             hManager = uigetmodemanager(source);
             [hManager.WindowListenerHandles.Enabled] = deal(false);  % HG2 (on 2014b or later)
             set(source, 'KeyPressFcn', @keyPressCallback);
+        case 'r' % refresh (return zoom to full encounter, set plot boundaries to encompass only retained detections)
+
+            % calculate limits of time axes:
+            tlim = nan(1,2); % limit of time axes
+            for narr = 1:2
+                tlim(1) = min([tlim(1); DET{narr}.TDet]);
+                tlim(2) = max([tlim(2); DET{narr}.TDet]);
+            end
+            
+            % update AR1:
+            set(source.Children(4), 'XLim', [min(DET{1}.Ang(:,1)), max(DET{1}.Ang(:,1))], ...
+                'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update az vs el plot
+            set(source.Children(5), 'XLim', tlim, ...
+                'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update t vs el plot
+            set(source.Children(6), 'XLim', tlim, 'YLim', ...
+                [min(DET{1}.Ang(:,1))-2, max(DET{1}.Ang(:,1))+2]) % update t vs az plot
+           
+            % update AR2:
+            set(source.Children(1), 'XLim', [min(DET{2}.Ang(:,1)), max(DET{2}.Ang(:,1))], ...
+                'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update az vs el plot
+            set(source.Children(2), 'XLim', tlim, ...
+                'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update t vs el plot
+            set(source.Children(3), 'XLim', tlim, 'YLim', ...
+                [min(DET{2}.Ang(:,1))-2, max(DET{2}.Ang(:,1))+2]) % update t vs az plot
+           
+
+            ok = 1;
+
         case 'u' % undo
             DET = DETprev;
 
