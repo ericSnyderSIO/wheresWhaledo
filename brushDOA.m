@@ -84,6 +84,8 @@ ylabel('AZ1')
 grid on
 subpos = get(sp(1), 'Position');
 set(sp(1), 'Position', subpos + [-.08, .005, .08, .068])
+tb = axtoolbar('default');
+tb.Visible = 'off';
 
 sp(2) = subplot(4, 6, [7, 10]);
 scatter(DET{1}.('TDet'), DET{1}.('Ang')(:,2), ms, brushing.params.colorMat(DET{1}.('color'), :), 'filled')
@@ -95,6 +97,8 @@ ylabel('EL1')
 grid on
 subpos = get(sp(2), 'Position');
 set(sp(2), 'Position', subpos + [-.08, -.025, .08, .068])
+tb = axtoolbar('default');
+tb.Visible = 'off';
 % linkaxes([sp1, sp2], 'x')
 
 sp(3) = subplot(4, 6, [5,12]);
@@ -105,7 +109,8 @@ ylabel('EL1')
 grid on
 subpos = get(sp(3), 'Position');
 set(sp(3), 'Position', subpos + [0, 0, .08, .07])
-
+tb = axtoolbar('default');
+tb.Visible = 'off';
 
 % plot array 2
 sp(4) = subplot(4, 6, [13, 16]);
@@ -118,6 +123,8 @@ ylabel('AZ2')
 grid on
 subpos = get(sp(4), 'Position');
 set(sp(4), 'Position', subpos + [-.08, -.055, .08, .068])
+tb = axtoolbar('default');
+tb.Visible = 'off';
 
 sp(5) = subplot(4, 6, [19, 22]);
 scatter(DET{2}.('TDet'), DET{2}.('Ang')(:,2), ms, brushing.params.colorMat(DET{2}.('color'), :), 'filled')
@@ -128,6 +135,8 @@ ylabel('EL2')
 grid on
 subpos = get(sp(5), 'Position');
 set(sp(5), 'Position', subpos + [-.08, -0.085, .08, .068])
+tb = axtoolbar('default');
+tb.Visible = 'off';
 % linkaxes([sp3, sp4], 'x')
 
 sp(6) = subplot(4, 6, [17,24]);
@@ -138,6 +147,8 @@ ylabel('EL2')
 grid on
 subpos = get(sp(6), 'Position');
 set(sp(6), 'Position', subpos + [0, -.06, .08, .07])
+tb = axtoolbar('default');
+tb.Visible = 'off';
 
 %brush on
 b = brush(fig);
@@ -340,6 +351,8 @@ else % if input is letter, perform associated function
                 unlabeledInstnum = 2;
             elseif labeledInstnum==2
                 unlabeledInstnum = 1;
+            else
+                errordlg('Invalid instrument number')
             end
 
             whalenum = inputdlg('Enter whale number to associate(a number, or ''a'' for all): ', 'Associate whales');
@@ -417,23 +430,26 @@ else % if input is letter, perform associated function
             end
             
             % update AR1:
-            set(source.Children(4), 'XLim', [min(DET{1}.Ang(:,1)), max(DET{1}.Ang(:,1))], ...
-                'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update az vs el plot
-            set(source.Children(5), 'XLim', tlim, ...
-                'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update t vs el plot
-            set(source.Children(6), 'XLim', tlim, 'YLim', ...
-                [min(DET{1}.Ang(:,1))-2, max(DET{1}.Ang(:,1))+2]) % update t vs az plot
-           
-            % update AR2:
-            set(source.Children(1), 'XLim', [min(DET{2}.Ang(:,1)), max(DET{2}.Ang(:,1))], ...
-                'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update az vs el plot
-            set(source.Children(2), 'XLim', tlim, ...
-                'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update t vs el plot
-            set(source.Children(3), 'XLim', tlim, 'YLim', ...
-                [min(DET{2}.Ang(:,1))-2, max(DET{2}.Ang(:,1))+2]) % update t vs az plot
-           
+            if ~isempty(DET{1}.Ang)
+                set(source.Children(4), 'XLim', [min(DET{1}.Ang(:,1)), max(DET{1}.Ang(:,1))], ...
+                    'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update az vs el plot
+                set(source.Children(5), 'XLim', tlim, ...
+                    'YLim', [min(DET{1}.Ang(:,2))-2, max(DET{1}.Ang(:,2))+2]) % update t vs el plot
+                set(source.Children(6), 'XLim', tlim, 'YLim', ...
+                    [min(DET{1}.Ang(:,1))-2, max(DET{1}.Ang(:,1))+2]) % update t vs az plot
+            end
 
-            ok = 1;
+            % update AR2:
+            if ~isempty(DET{2}.Ang)
+                set(source.Children(1), 'XLim', [min(DET{2}.Ang(:,1)), max(DET{2}.Ang(:,1))], ...
+                    'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update az vs el plot
+                set(source.Children(2), 'XLim', tlim, ...
+                    'YLim', [min(DET{2}.Ang(:,2))-2, max(DET{2}.Ang(:,2))+2]) % update t vs el plot
+                set(source.Children(3), 'XLim', tlim, 'YLim', ...
+                    [min(DET{2}.Ang(:,1))-2, max(DET{2}.Ang(:,1))+2]) % update t vs az plot
+
+            end
+
 
         case 'u' % undo
             DET = DETprev;

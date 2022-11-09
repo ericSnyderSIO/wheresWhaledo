@@ -4,7 +4,7 @@ global detParam % initialize global variable
 
 detParam.twin = 30; % length of time to read in (s)
 
-detParam.th = 45; % Detection threshold (counts)
+detParam.th = 100; % Detection threshold (counts)
 
 detParam.fc = 20e3; % filter cutoff frequency
 

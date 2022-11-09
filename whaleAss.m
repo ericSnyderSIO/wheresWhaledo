@@ -4,8 +4,6 @@ function DETout = whaleAss(DETin, labeledInstNum, otherInstNum, whaleNum, vararg
 % Takes Detections on DET{labeledInstnum} labeled as whaleNum and uses click-train
 % correlation to find the detections on the other instrument(s)
 
-fwb = waitbar(0, ['Associating whale ', num2str(whaleNum), '...']);
-
 global WAparam
 
 % load in params
@@ -14,6 +12,8 @@ if nargin == 5 % param file specified
 else % no param file specified, load default file
     loadParams('whaleAss.params')
 end
+
+fwb = waitbar(0, ['Associating whale ', num2str(whaleNum), '...']);
 
 DETout = DETin;
 spd = 60*60*24; % seconds per day, for converting between datenum and seconds
@@ -48,15 +48,17 @@ while tstart<=TDetL(end) % compute while tstart is less than last labeled detect
         tend = tstart + tnext;
         continue
     end
-    % create click trains with delta functions:
+
+    % create click trains with delta functions for labeled array:
     for i = 1:length(IwinL)
-        [~, I] = min((tct-TDetL(IwinL(i))).^2);
-        xL(I) = 1;
+        [~, I] = min((tct-TDetL(IwinL(i))).^2); % index of click train time vector closest to detection time
+        xL(I) = 1; % replace index of detection with 1
     end
 
+    % create click trains with delta functions for labeled array:
     for i = 1:length(IwinO)
-        [~, I] = min((tct-TDetO(IwinO(i))).^2);
-        xO(I) = 1;
+        [~, I] = min((tct-TDetO(IwinO(i))).^2); % index of click train time vector closest to detection time
+        xO(I) = 1; % replace index of detection with 1
     end
 
     % convolve with hanning window:
@@ -103,4 +105,3 @@ while tstart<=TDetL(end) % compute while tstart is less than last labeled detect
 end
 close(fwb)
 
-ok = 1;
