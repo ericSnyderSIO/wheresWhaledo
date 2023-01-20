@@ -18,3 +18,7 @@ TDOAparam.NTDOA = length(TDOAparam.hpair); % number of TDOAs to calculate
 TDOAparam.fc = 20e3; % filter cutoff frequency
 
 TDOAparam.twin = 2e-3; % length of time to read in around detection time (s)
+
+TDOAparam.sigDuration = round(TDOAparam.fsxc*580e-6); % expected signal duration (samples, must be even number. Value taken from "Species-specific beaked whale echolocation signals")
+
+TDOAparam.maxDrift = 0.3109; % maximum drift between instruments

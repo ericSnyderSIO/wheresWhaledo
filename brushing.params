@@ -18,4 +18,4 @@ brushing.params.colorMat(11, :) = [0.792157, 0.698039, 0.839216]; % Buzzes
 brushing.params.colorLegendPos = [1, 30, 200, 500]; % Label Color Legend Position 
 brushing.params.commandLegendPos = [1, 560, 175, 300]; % Keyboard command Legend Position 
 
-brushing.params.figPosition = [176, 41, 1744, 960]; % Figure position
+brushing.params.figPosition = [180, 40, 1730, 960]; % Figure position

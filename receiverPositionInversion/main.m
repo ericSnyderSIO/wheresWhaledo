@@ -2,7 +2,7 @@
 % array from the TDOA of known source locations (ship engine sounds)
 close all
 %%
-deploymentName = 'SOCAL_E_63_EW';
+deploymentName = 'SOCAL_E_63_EE';
 
 XH = load(['D:\SOCAL_E_63\xwavTables\', deploymentName, '_C4_xwavLookupTable']);
 

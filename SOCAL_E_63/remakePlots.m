@@ -25,27 +25,7 @@ XH{4} = xwavTable;
 %% load H matrices and hydrophone locations
 
 load('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat')
-hydLoc{1} = hLatLonZ(1,:);
-hydLoc{2} = hLatLonZ(2,:);
-hydLoc{3} = hLatLonZ(3,:);
-hydLoc{4} = hLatLonZ(4,:);
-
-h0 = mean([hydLoc{1}; hydLoc{2}]);
-
-% convert hydrophone locations to meters:
-[h1(1), h1(2)] = latlon2xy_wgs84(hydLoc{1}(1), hydLoc{1}(2), h0(1), h0(2));
-h1(3) = abs(h0(3))-abs(hydLoc{1}(3));
-
-[h2(1), h2(2)] = latlon2xy_wgs84(hydLoc{2}(1), hydLoc{2}(2), h0(1), h0(2));
-h2(3) = abs(h0(3))-abs(hydLoc{2}(3));
-
-[h3(1), h3(2)] = latlon2xy_wgs84(hydLoc{3}(1), hydLoc{3}(2), h0(1), h0(2));
-h3(3) = abs(h0(3))-abs(hydLoc{3}(3));
-
-[h4(1), h4(2)] = latlon2xy_wgs84(hydLoc{4}(1), hydLoc{4}(2), h0(1), h0(2));
-h4(3) = abs(h0(3))-abs(hydLoc{4}(3));
-
-hloc = [h1;h2;h3;h4];
+hloc = [0,0,0; h]; % hydrophone locations (meters)
 
 hyd1 = load('D:\SOCAL_E_63\tracking\experiments\inverseProblem\matfiles\SOCAL_E_63_EE_Hmatrix_fromHydLocInversion_210702.mat');
 hyd2 = load('D:\SOCAL_E_63\tracking\experiments\inverseProblem\matfiles\SOCAL_E_63_EW_Hmatrix_fromHydLocInversion_210702.mat');
@@ -75,13 +55,13 @@ load('D:\MATLAB_addons\gitHub\wheresWhaledo\SOCAL_E_63\sigmaValues.mat')
 M = load('B:\TDOAmodel_50dx50dy15dz.mat');
 
 % load drift:
-load('D:\SOCAL_E_63\tracking\experiments\clockSync\drift.mat');
+load('D:\SOCAL_E_63\xwavTables\drift');
 dp{1} = coeffvalues(Dpoly{1}); % drift coefficients between inst 1 and 2
-dp{2} = coeffvalues(Dpoly{2}); % drift coefficients between inst 1 and 3
-dp{3} = coeffvalues(Dpoly{3}); % drift coefficients between inst 1 and 4
-dp{4} = coeffvalues(Dpoly{4}); % drift coefficients between inst 2 and 3
-dp{5} = coeffvalues(Dpoly{5}); % drift coefficients between inst 2 and 4
-dp{6} = coeffvalues(Dpoly{6}); % drift coefficients between inst 3 and 4
+dp{2} = coeffvalues(Dpoly{1}); % drift coefficients between inst 1 and 3
+dp{3} = coeffvalues(Dpoly{1}); % drift coefficients between inst 1 and 4
+dp{4} = dp{2}-dp{1}; % drift coefficients between inst 2 and 3
+dp{5} = dp{3}-dp{1}; % drift coefficients between inst 2 and 4
+dp{6} = dp{3}-dp{2}; % drift coefficients between inst 3 and 4
 
 spd = 60*60*24; % seconds per day (converting from datenum)
 numInst = 4; % number of instruments
@@ -98,51 +78,40 @@ for nsp = 1:6
     sporder{nsp + 7} = 3*nsp;
 end
 
-figDir = 'D:\SOCAL_E_63\tracking\interns2022\allTracks_localized_pics_negDrift';
+figDir = 'D:\SOCAL_E_63\tracking\interns2022\allTracks_localized_pics';
 
 df = dir('D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\*track*'); % directory of folders containing files
 tn = zeros(numel(df), 1);
 
 nstart = 1;
 for ndf = nstart:numel(df)
-%     for ndf = 61
     tic
     fprintf(['file ', num2str(ndf), '. ', num2str(100*ndf/numel(df)), '%% done\n'])
     clear whale
-    d = dir(fullfile(df(ndf).folder, [df(ndf).name, '\*fineTDOA*.mat']));
+    d = dir(fullfile(df(ndf).folder, [df(ndf).name, '\*localized_coarse*.mat']));
     if ~isempty(d)
         load(fullfile(d.folder, d.name))
         newName = [d.name(1:end-12), 'localized'];
 
         %         whale = calcVariance(whale, XH, sig2_H1, sig2_H2, sig2_lrg, c, 'calcTDOA.params', 'detClicks_4ch.params');
+        %
+        %         whale = localize(whale, hloc, H1, H2, dp, c, M);
 
-        whale = localize(whale, hloc, H1, H2, dp);
 
-        fig = figure(101);
+        fig = figure(1);
         fig.WindowState = 'maximized';
 
         tmin = nan;
         tmax = nan;
         for wn = 1:numel(whale)
-            
             tmin = min([tmin, min(min(whale{wn}.TDet))]);
             tmax = max([tmax, max(max(whale{wn}.TDet))]);
-
-            CI{1} = abs(whale{wn}.CIx-whale{wn}.wloc(:,1));
-            CI{2} = abs(whale{wn}.CIy-whale{wn}.wloc(:,2));
-            CI{3} = abs(whale{wn}.CIz-whale{wn}.wloc(:,3));
-
             for nc = 1:3
 
                 subplot(6,3,sporder{nc})
-
                 plot(min(whale{wn}.TDetAll.'), whale{wn}.wloc(:, nc), '.', 'color', colorMat(wn+2, :))
-                hold on
-                %                 e = errorbar(min(whale{wn}.TDetAll.'), whale{wn}.wloc(:, nc), CI{nc}(:, 1), CI{nc}(:, 2));
-                %                 e.Color = colorMat(wn+2, :);
-                %                 set([e.Bar, e.Line], 'ColorType', 'truecoloralpha', 'ColorData', [e.Line.ColorData(1:3); 255*.1])
+                
                 xlim([tmin, tmax])
-
                 grid on
                 datetick('x', 'HH:MM','keeplimits')
                 hold on
@@ -158,45 +127,64 @@ for ndf = nstart:numel(df)
             end
 
             Iuse = find(~isnan(whale{wn}.TDOA(:, 1)));
-            az = zeros(size(Iuse));
-            el = az;
-            for i = 1:length(Iuse)
-                doa = whale{wn}.TDOA(Iuse(i), 7:12).'\H2;
-                doa = doa./sqrt(sum(doa.^2));
-                el(i) = 180 - acosd(doa(3));
-                az(i) = atan2d(doa(2), doa(1));
-            end
-            subplot(6, 3, sporder{4})
-            plot(whale{wn}.TDet(Iuse, 1), az, '.', 'color', colorMat(wn+2, :))
-            hold on
-            title('EE Angle')
-            ylabel('az')
+            if ~isempty(Iuse)
+                for i = 1:length(Iuse)
+                    doa = whale{wn}.TDOA(Iuse(i), 1:6).'\H1;
+                    doa = doa./sqrt(sum(doa.^2));
+                    el = 180 - acosd(doa(3));
+                    az = atan2d(doa(2), doa(1));
+                    whale{wn}.Ang1(Iuse(i), :) = [az, el];
+                end
+                subplot(6, 3, sporder{4})
 
-            subplot(6, 3, sporder{5})
-            plot(whale{wn}.TDet(Iuse, 1), el, '.', 'color', colorMat(wn+2, :))
-            hold on
-            ylabel('el')
+                plot(whale{wn}.TDet(Iuse, 1), whale{wn}.Ang1(Iuse, 1), '.', 'color', colorMat(wn+2, :))
+                hold on
+                title('EE Angle')
+                ylabel('az')
+
+                xlim([tmin, tmax])
+                grid on
+                datetick('x', 'HH:MM','keeplimits')
+
+                subplot(6, 3, sporder{5})
+                plot(whale{wn}.TDet(Iuse, 1), whale{wn}.Ang1(Iuse, 2), '.', 'color', colorMat(wn+2, :))
+                hold on
+                ylabel('el')
+
+                xlim([tmin, tmax])
+                grid on
+                datetick('x', 'HH:MM','keeplimits')
+            end
+
 
             Iuse = find(~isnan(whale{wn}.TDOA(:, 7)));
-            az = zeros(size(Iuse));
-            el = az;
-            for i = 1:length(Iuse)
-                doa = whale{wn}.TDOA(Iuse(i), 7:12).'\H2;
-                doa = doa./sqrt(sum(doa.^2));
-                el(i) = 180 - acosd(doa(3));
-                az(i) = atan2d(doa(2), doa(1));
+            if ~isempty(Iuse)
+                for i = 1:length(Iuse)
+                    doa = whale{wn}.TDOA(Iuse(i), 7:12).'\H2;
+                    doa = doa./sqrt(sum(doa.^2)) ;
+                    el = 180 - acosd(doa(3));
+                    az = atan2d(doa(2), doa(1));
+                    whale{wn}.Ang2(Iuse(i), :) = [az, el];
+                end
+                subplot(6, 3, sporder{6})
+                plot(whale{wn}.TDet(Iuse, 1), whale{wn}.Ang2(Iuse, 1), '.', 'color', colorMat(wn+2, :))
+                hold on
+                title('EW Angle')
+                ylabel('az')
+
+                xlim([tmin, tmax])
+                grid on
+                datetick('x', 'HH:MM','keeplimits')
+
+                subplot(6, 3, sporder{7})
+                plot(whale{wn}.TDet(Iuse, 1), whale{wn}.Ang2(Iuse, 2), '.', 'color', colorMat(wn+2, :))
+                hold on
+                ylabel('el')
+
+                xlim([tmin, tmax])
+                grid on
+                datetick('x', 'HH:MM','keeplimits')
             end
-            subplot(6, 3, sporder{6})
-            plot(whale{wn}.TDet(Iuse, 1), az, '.', 'color', colorMat(wn+2, :))
-            hold on
-            title('EW Angle')
-            ylabel('az')
-
-            subplot(6, 3, sporder{7})
-            plot(whale{wn}.TDet(Iuse, 1), el, '.', 'color', colorMat(wn+2, :))
-            hold on
-            ylabel('el')
-
             for sp = 1:6
                 subplot(6, 3, sporder{7+sp})
                 plot(whale{wn}.TDet, whale{wn}.TDOA(:, 12+sp), '.', 'color', colorMat(wn+2, :))
@@ -204,9 +192,12 @@ for ndf = nstart:numel(df)
                 if sp==1
                     title('Large ap TDOA')
                 end
+
+                xlim([tmin, tmax])
+                grid on
+                datetick('x', 'HH:MM','keeplimits')
             end
 
-            
         end
 
         sgtitle(datestr(min(min(whale{wn}.TDet)), 'yy-mmm-dd'))

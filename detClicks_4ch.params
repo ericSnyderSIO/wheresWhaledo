@@ -14,4 +14,6 @@ detParam.minPkDist = round(5e-3*detParam.fs); % minimum separation between detec
 
 detParam.maxdn = 100; % max TDOA (samples)
 
-detParam.xcRow = [2, 3, 4, 7, 8, 12]; % which rows of xcov to use for TDOA
+detParam.xcRow = [2, 3, 4, 7, 8, 12]; % which rows of xcov to use for TDOA (actually should be column, not row)
+
+detParam.sigDuration = round(580e-6*detParam.fs); % expected signal duration (samples, must be even number) (taken from "Species-specific beaked whale echolocation signals")

@@ -38,8 +38,8 @@ csml = 1488.4;
 
 %% coarse resolution
 
-dx = 100;
-dy = 100;
+dx = 50;
+dy = 50;
 dz = 20;
 
 xvecCoarse = -4500:dx:3500;

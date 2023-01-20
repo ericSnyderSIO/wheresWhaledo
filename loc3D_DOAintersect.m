@@ -4,6 +4,7 @@ function whaleLoc = loc3D_DOAintersect(DET, hydLoc, paramFile)
 % whaleLoc is a struct with the 3-D tracks
 % DET is a struct containing detection tables
 % hydLoc is a struct with the hydrophone locations in lat, lon, z
+% paramFile is the same brushing.params file used for brushDOA
 
 global brushing
 loadParams(paramFile)
@@ -35,39 +36,38 @@ for wn = 1:length(colorNums) % iterate through each whale number
         t1 = DET{1}.TDet(I1); % times of detections on array 1
         t2 = DET{2}.TDet(I2); % times of detections on array 2
 
-        % period of overlapping detections
-        tstart = max([min(DET{1}.TDet(I1)), min(DET{2}.TDet(I2))]);
-        tend = min([max(DET{1}.TDet(I1)), max(DET{2}.TDet(I2))]);
+        doa1 = DET{1}.DOA(I1, :);
+        doa2 = DET{2}.DOA(I2, :);
+        
+        i = 0;
+        for i1 = 1:length(t1) % iterate through all detections on array 1
+            [tdiff, i2] = min(abs(t2 - t1(i1))); % find nearest detection on array 2
 
-        ti = tstart:1/spd:tend;
+            if tdiff<3/spd
+                i = i+1; % iterate counter of localized detections
+                D = [doa1(i1, :); -doa2(i2, :)];
+                R = D.'\(h2-h1).'; % range of whale to each instrument
 
-        if ~isempty(ti) % will be empty if there aren't overlapping detections
-            doa1 = DET{1}.DOA(I1, :);
-            doa2 = DET{2}.DOA(I2, :);
-
-            doa1i = interp1(t1, doa1, ti);
-            doa2i = interp1(t2, doa2, ti);
-
-            for i = 1:length(ti)
-                D = [doa1i(i, :); -doa2i(i, :)];
-                R = D.'\(h2-h1).';
-
-                w1 = R(1).*doa1i(i,:) + h1;
-                w2 = R(2).*doa2i(i,:) + h2;
+                w1 = R(1).*doa1(i1, :) + h1;
+                w2 = R(2).*doa2(i2, :) + h2;
 
                 w(i, :) = mean([w1; w2]);
                 werr(i) = sqrt(sum((w1-w2).^2));
-
+                t1_used(i) = t1(i1);
+                t2_used(i) = t2(i2);
             end
-            whaleLoc{wn}.xyz = w;
-
-            [lat, lon] = xy2latlon_wgs84(w(1, :), w(2, :), h0(1), h0(2));
-            z = w(3,:) - abs(h0(3));
-            whaleLoc{wn}.LatLonDepth = [lat; lon; z];
-
-            scatter3(whaleLoc{wn}.xyz(:, 1), whaleLoc{wn}.xyz(:, 2), whaleLoc{wn}.xyz(:, 3), ...
-                24, brushing.params.colorMat(wn+2, :), 'filled')
         end
+        whaleLoc{wn}.xyz = w;
+        whaleLoc{wn}.t1 = t1_used;
+        whaleLoc{wn}.t2 = t2_used;
+        [lat, lon] = xy2latlon_wgs84(w(1, :), w(2, :), h0(1), h0(2));
+        z = w(3,:) - abs(h0(3));
+        whaleLoc{wn}.LatLonDepth = [lat; lon; z];
+        whaleLoc{wn}.werr = werr;
+        
+        scatter3(whaleLoc{wn}.xyz(:, 1), whaleLoc{wn}.xyz(:, 2), whaleLoc{wn}.xyz(:, 3), ...
+            24, brushing.params.colorMat(wn+2, :), 'filled')
+
     end
 end
 hold off

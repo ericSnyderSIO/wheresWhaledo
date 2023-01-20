@@ -1,5 +1,5 @@
 global CTCparam
-loadParams('CTCparams.txt')
+loadParams('CTC.params')
 
 % xwav tables:
 load('D:\SOCAL_E_63\xwavTables\SOCAL_E_63_EE_C4_xwavLookupTable');
@@ -58,7 +58,7 @@ for ndf = nstart:numel(df)
         fig = figure(1);
         fig.WindowState = 'maximized';
         for wn = 1:length(whaleNums)
-            [CTC{wn}, DET] = clickTrainCorr(DET, whaleNums(wn), kerInst, labeledInst, [3,4], 'D:\MATLAB_addons\gitHub\wheresWhaledo\CTCparams.txt');
+            [CTC{wn}, DET] = clickTrainCorr(DET, whaleNums(wn), kerInst, labeledInst, [3,4], 'D:\MATLAB_addons\gitHub\wheresWhaledo\CTC.params');
 
             for ntdoa = 1:18
 
