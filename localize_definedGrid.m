@@ -29,8 +29,6 @@ end
 whaleOut = whaleIn;
 Nlrg = numel(driftPoly); % number of large ap TDOAs
 
-Ntop = round((LOC.topPercent/100)*LOC.Nx*LOC.Ny*LOC.Nz); % number of points to include to determine limits of next iteration
-
 sig2sml = LOC.sig_sml^2; % variance of small ap
 sig2lrg = LOC.sig_lrg^2; % variance of large ap
 
@@ -65,9 +63,9 @@ for wn = 1:numel(whaleOut)
             Asml = (2*pi*sig2sml)^(-length(Isml)/2); % coefficient of small ap
             Alrg = (2*pi*sig2lrg)^(-length(Ilrg)/2); % coefficient of large ap
             
-            xv = linspace(LOC.wxlim(1), LOC.wxlim(2), LOC.Nx);
-            yv = linspace(LOC.wylim(1), LOC.wylim(2), LOC.Ny);
-            zv = linspace(LOC.wzlim(1), LOC.wzlim(2), LOC.Nz);
+            xv = linspace(LOC.M{1}.x(1), LOC.M{1}.x(2), LOC.M{1}.Nx);
+            yv = linspace(LOC.M{1}.y(1), LOC.M{1}.y(2), LOC.M{1}.Ny);
+            zv = linspace(LOC.M{1}.z(1), LOC.M{1}.z(2), LOC.M{1}.Nz);
              
             for niter = 1:LOC.niter-1 
                 % iteratively generate model and perform max likelihood
@@ -77,11 +75,11 @@ for wn = 1:numel(whaleOut)
                 Llrg = Alrg*exp(-1./(2.*sig2lrg).*sum((mTDOA(:,13:end)-TDOA(13:end)).^2, 2, 'omitnan'));
 
                 L = Lsml.*Llrg;
-                [~, I] = maxk(L, Ntop);
-
-                xv = linspace(min(mwloc(I, 1)), max(mwloc(I, 1)), LOC.Nx);
-                yv = linspace(min(mwloc(I, 2)), max(mwloc(I, 2)), LOC.Ny);
-                zv = linspace(min(mwloc(I, 3)), max(mwloc(I, 3)), LOC.Nz);
+                [~, I] = max(L);
+                wlocEst = mwloc(I, :);
+                xv = linspace(LOC.M{niter+1}.x(1) + wlocEst(1), LOC.M{niter+1}.x(2) + wlocEst(1), LOC.M{niter+1}.Nx);
+                yv = linspace(LOC.M{niter+1}.y(1) + wlocEst(2), LOC.M{niter+1}.y(2) + wlocEst(2), LOC.M{niter+1}.Ny);
+                zv = linspace(LOC.M{niter+1}.z(1) + wlocEst(3), LOC.M{niter+1}.z(2) + wlocEst(3), LOC.M{niter+1}.Nz);
 
             end
 
@@ -153,9 +151,9 @@ CIx = nan(1, 2);
 CIy = nan(1, 2);
 CIz = nan(1, 2);
 % vectors used for CI calculations:
-xv = LOC.wxlim(1):LOC.wxlim(2);
-yv = LOC.wylim(1):LOC.wylim(2);
-zv = LOC.wzlim(1):LOC.wzlim(2);
+xv = LOC.M{1}.x(1):LOC.M{1}.x(2);
+yv = LOC.M{1}.y(1):LOC.M{1}.y(2);
+zv = LOC.M{1}.z(1):LOC.M{1}.z(2);
 
 % calculate CIx:
 [mTDOA, mwloc] = makeModel(xv, wloc(2), wloc(3), h, H1, H2, LOC.c);

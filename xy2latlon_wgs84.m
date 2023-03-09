@@ -8,4 +8,4 @@ function [lat, lon] = xy2latlon_wgs84(x, y, lat0, lon0)
 
 az = atan2d(x, y);
 arclen = sqrt(x.^2 + y.^2);
-[lat, lon] = reckon(lat0, lon0, arclen, az);
+[lat, lon] = reckon(lat0, lon0, arclen, az, wgs84Ellipsoid);

@@ -1,4 +1,7 @@
 function whale = calcTDOAfromCTC(CTC, XH, varargin)
+% whale = calcTDOAfromCTC(CTC, XH)
+% whale = calcTDOAfromCTC(CTC, XH, TDOAparamFile)
+% calculates TDOA from CTC by cross-correlating the acoustic data.
 
 
 global TDOAparam
@@ -24,7 +27,7 @@ for wn = 1:numel(CTC) % iterate through each whale
         whale{wn}.TDOA(:, 13:12+TDOAparam.NTDOA) = nan;
         whale{wn}.XAmp = nan(length(whale{wn}.TDet), TDOAparam.NTDOA); % initialize XAmp
         whale{wn}.Iuse = zeros(size(whale{wn}.TDetAll));
-        whale{wn}.sigma = nan(size(whale{wn}.TDOA));
+        
         for ndet = 1:length(CTC{wn}.TDet)
             clear X T
             Iuse = find(~isnan(CTC{wn}.TDetAll(ndet, :)));

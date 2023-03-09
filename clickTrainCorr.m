@@ -1,12 +1,12 @@
 function [CTC, DETout] = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, unlabeledInst, varargin)
-% whale = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst)
-% whale = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, paramFile)
+% whale = clickTrainCorr(DETin, colorNum, kerInst, labeledInst)
+% whale = clickTrainCorr(DETin, colorNum, kerInst, labeledInst, paramFile)
 % Performs click train correlation (CTC) on DET tables.
 %
 % INPUTS:
 % -DETin: struct of det tables, where DETin{1} is instrument 1's DET table,
 % etc
-% -whaleNum: whale number being used in CTC
+% -colorNum: whale number being used in CTC
 % -kerInst: instrument(s) being used as kernel of CTC. If it's a vector,
 % code will iterate over all instruments listed and perform CTC then
 % associate clicks. To use both instruments 1 and 2 as kernels, use
@@ -24,10 +24,10 @@ function [CTC, DETout] = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, u
 global CTCparam
 
 % load in params
-if nargin == 5 % param file specified
+if nargin == 6 % param file specified
     loadParams(varargin{1})
 else % no param file specified, load default file
-    loadParams('CTCparams.txt')
+    loadParams('CTC.params')
 end
 
 % set variables:
@@ -40,15 +40,18 @@ numTDOA = max(CTCparam.indTDOA{3}); % number of TDOAs
 Ninit = 4000; % number of table elements for initializing table (excess rows are removed later)
 CTC = table(nan(Ninit, 1), nan(Ninit, CTCparam.numInst), nan(Ninit, CTCparam.numInst), ...
     nan(Ninit, numTDOA), nan(Ninit, CTCparam.numInst), nan(Ninit, CTCparam.numInst), ...
-    'VariableNames', {'TDet', 'TDetAll', 'DAmp', 'TDOA', 'corrScore', 'DETind'});
+    'VariableNames', {'TDet', 'TDetAll', 'DAmp', 'TDOA', 'CTCpk', 'DETind'});
 
 detnum = 0;
+
+colorNum = whaleNum + 2;
+
 for nh = 1:length(kerInst) % iterate through each instrument being used as a kernel in click train
     thisInst = kerInst(nh); % instrument currently being used as kernel in click train
     otherInsts = [labeledInst, unlabeledInst]; % all instruments
     otherInsts(otherInsts==thisInst) = []; % all instruments besides thisInst
 
-    Iwhale = find(DETout{thisInst}.color==whaleNum); % indices of all detections labeled whaleNum
+    Iwhale = find(DETout{thisInst}.color==colorNum); % indices of all detections labeled colorNum
     
     for idet = 1:length(Iwhale)
         detnum = detnum+1;
@@ -69,9 +72,9 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
 
         % make click trains for labeled instruments:
         for ninst = 1:length(labeledInst)
-            % find indices of detections within time window and labeled whaleNum
+            % find indices of detections within time window and labeled colorNum
             I = find(DETout{labeledInst(ninst)}.TDet>=tstart & DETout{labeledInst(ninst)}.TDet<=tend ...
-                & DETout{labeledInst(ninst)}.color==whaleNum);
+                & DETout{labeledInst(ninst)}.color==colorNum);
             DETind{labeledInst(ninst)} = I;
             % make click train for this instrument:
             X(:, labeledInst(ninst)) = makeCT(DETout{labeledInst(ninst)}.TDet(I), tct, CTCparam);
@@ -79,7 +82,7 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
 
         % make click trains for unlabeled instruments:
         for ninst = 1:length(unlabeledInst)
-            % find indices of detections within time window and labeled whaleNum
+            % find indices of detections within time window and labeled colorNum
             I = find(DETout{unlabeledInst(ninst)}.TDet>=tstart & DETout{unlabeledInst(ninst)}.TDet<=tend);
             DETind{unlabeledInst(ninst)} = I;
             % make click train for this instrument:
@@ -92,13 +95,13 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
             [pks, locs] = findpeaks(xc, "NPeaks", 2, "SortStr", 'descend');
             
             if length(pks)<2 % not enough clicks
-                CTC.corrScore(detnum, otherInsts(ninst)) = 0;
+                CTC.CTCpk(detnum, otherInsts(ninst)) = 0;
                 continue
             end
             if pks(1)*CTCparam.peakRatio>pks(2) % sufficiently unique peak in xcorr
                 bestLag = lags(locs(1));
                 
-                CTC.corrScore(detnum, otherInsts(ninst)) = pks(1)/pks(2);
+                CTC.CTCpk(detnum, otherInsts(ninst)) = pks(1)/pks(2);
                 
                 % determine detection on otherInst which is closest to
                 % current detection after delayed by TDOA:
@@ -107,8 +110,8 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
 
                 if tdif<=(CTCparam.tCloseEnough/spd) % detections are close enough to likely be the same click
 
-                    DETout{otherInsts(ninst)}.color(DETind{otherInsts(ninst)}(Imatch)) = whaleNum;
-                    DETout{otherInsts(ninst)}.Label(DETind{otherInsts(ninst)}(Imatch)) = num2str(whaleNum-2);
+                    DETout{otherInsts(ninst)}.color(DETind{otherInsts(ninst)}(Imatch)) = colorNum;
+                    DETout{otherInsts(ninst)}.Label(DETind{otherInsts(ninst)}(Imatch)) = num2str(colorNum-2);
                     
 
                     % find which large aperture TDOA index we are
@@ -120,6 +123,7 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
                     CTC.DAmp(detnum, otherInsts(ninst)) = DETout{otherInsts(ninst)}.DAmp(DETind{otherInsts(ninst)}(Imatch));
                     CTC.DETind(detnum, otherInsts(ninst)) = DETind{otherInsts(ninst)}(Imatch);
                     CTC.TDetAll(detnum, otherInsts(ninst)) = DETout{otherInsts(ninst)}.TDet(DETind{otherInsts(ninst)}(Imatch));
+                    
                     
                     % if this is small ap TDOA, tranfer small ap TDOA data:
                     if otherInsts(ninst)==1
@@ -135,7 +139,7 @@ for nh = 1:length(kerInst) % iterate through each instrument being used as a ker
                     end
                 end
             else
-                CTC.corrScore(detnum, otherInsts(ninst)) = 0;
+                CTC.CTCpk(detnum, otherInsts(ninst)) = 0;
             end
         end
     end
@@ -149,24 +153,6 @@ CTC(Irem, :) = [];
 [~, Isort] = sort(CTC.TDet);
 CTC = CTC(Isort, :);
 
-
-% % Remove/combine redundant entries:
-% UD = unique(CTC.DETind(:, 1:2),'rows','stable');
-% for id = 1:length(UD)
-% 
-%     Irow = find(ismember(CTC.DETind(:, 1:2), UD(id, :)));
-%     if length(Irow)>1 % this association is repeated
-%         scr = zeros(length(Irow), 1);
-%         for ir = 1:length(Irow)
-%             scr(ir) = max(CTC.corrScore(1,1:2))
-%         end
-%         [~, Imax] = max(scr); % the index got the best score
-%         CTC()
-%     end
-% 
-% end
-
-ok = 1;
 end
 %%
 function Xct = makeCT(TDet, tct, CTCparam)
@@ -179,6 +165,6 @@ for i = 1:length(TDet)
     Xct(I) = 1;
 end
 
-Xct = conv(Xct, CTCparam.Wk); % convolve with hanning window
+Xct = conv(Xct, CTCparam.Wk, 'same'); % convolve with hanning window
 
 end

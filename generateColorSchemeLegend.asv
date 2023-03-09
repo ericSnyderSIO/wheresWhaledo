@@ -9,7 +9,7 @@ if isempty(fig)
 end
 set(fig, 'MenuBar', 'None'); % Hide Menu bar
 set(fig, 'NumberTitle', 'off')
-colormap(fig, brushing.params.colorMat(2:end-1,:))
+colormap(fig, brushing.params.colorMat)
 
 colIm = imagesc(M);
 
@@ -18,13 +18,13 @@ fig.Children.YTick = [];
 
 fontSize = 13;
 
-% text(1, M(1), '(Acoustic Data)', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
-text(1, M(1), 'Unlabeled', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
+text(1, M(1), '(Acoustic Data)', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
+text(1, M(2), 'Unlabeled', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
 
-for i = 2:(length(M))
-    text(1, M(i), ['Whale #', num2str(i-1)], 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
+for i = 3:(length(M)-1)
+    text(1, M(i), ['Whale #', num2str(i-2)], 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
 end
 
-% text(1, M(end), 'Buzzes', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
+text(1, M(end), 'Buzzes', 'HorizontalAlignment', 'center', 'Color', 'white', 'FontSize', fontSize)
 
 title('Label Color Scheme')

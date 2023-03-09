@@ -82,33 +82,39 @@ sigEW_Hz = 0.1236;
 sigEW_H = sqrt(sigEW_Hx^2 + sigEW_Hy^2 + sigEW_Hz^2);
 
 %% Uncertainty due to drift
+% error due to uncertainty in Acoustic Release ping synchronizing, solved
+% for here:
+% D:\SOCAL_E_63\tracking\experiments\clockSync\useAcousticReleasePingsToSolveForDriftOnly
+
+sigAR = .0193;
+
 % Calculated in
 % D:\SOCAL_E_63\tracking\experiments\clockSync\comeUpWithDriftForFullDeployment
 
 load('D:\SOCAL_E_63\xwavTables\drift')
 
-sigEW_drift = drift_std(1);
-sigEN_drift = drift_std(2);
-sigES_drift = drift_std(3);
+sigEW_drift = sqrt(drift_std(1)^2 + sigAR^2);
+sigEN_drift = sqrt(drift_std(2)^2+ sigAR^2);
+sigES_drift = sqrt(drift_std(3)^2+ sigAR^2);
 %% 
 % sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + (c*sigEE_rayBend)^2 + (c*sigEE_xcorr)^2)';
 % sigEW_equation = 'sigEW = sqrt(sigEW_H^2 + (TDOA*sig_csml)^2 + (c*sigEW_rayBend)^2 + (c*sigEW_xcorr)^2)';
 % sigLargeAp_equation = 'sig = sqrt(sigEX_h^2 + sigEY_h^2 + ((TDOA+drift)*sig_clrg)^2 + c^2*(sigEX_EY_xcorr^2 + sigEX_drift^2+sigEY_drift^2))';
 
-sig_H1_equation = 'sigEE = sqrt(sig2EE*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
+sig_H1_equation = 'sigEE = sqrt(sig2_H1*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
 sig2_H1(1) = sigEE_H^2;      
 sig2_H1(2) = sig_csml^2;
 sig2_H1(3) = c^2*sigEE_rayBend^2;
 sig2_H1(4) = c^2; 
 
-sig_H2_equation = 'sigEW = sqrt(sig2EW*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
+sig_H2_equation = 'sigEW = sqrt(sig2_H2*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
 sig2_H2(1) = sigEW_H^2;      
 sig2_H2(2) = sig_csml^2;
 sig2_H2(3) = c^2*sigEE_rayBend^2;
 sig2_H2(4) = c^2; 
 
 % large aperture variance:
-sigLargeAp_equation = 'sig_lrg = sqrt(sum(sig2lrg.*[ones(1,6); (TDOA+drift).^2; ones(1,6); sig_xcov^2]))';
+sigLargeAp_equation = 'sig_lrg = sqrt(sum(sig2_lrg.*[ones(1,6); (TDOA+drift).^2; ones(1,6); sig_xcov^2]))';
 
 
 % variance due to hydrophone locations:
@@ -134,8 +140,10 @@ sig2_lrg(3, 6) = c^2*(sigEN_drift^2 + sigES_drift^2);
 % detection)
 sig2_lrg(4, 1:6) = c^2;
 
-
-save('sigmaValues', 'sigLargeAp_equation', 'sig_H1_equation', 'sig_H2_equation', 'sig2_H1', 'sig2_H2', 'sig2_lrg')
+sig2_H1 = sig2_H1./c^2;
+sig2_H2 = sig2_H2./c^2;
+sig2_lrg = sig2_lrg./c^2;
+save('sigmaValues', 'sigLargeAp_equation', 'sig_H1_equation', 'sig_H2_equation', 'sig2_H1', 'sig2_H2', 'sig2_lrg', 'c')
 
 %% simplified sigmas:
 % sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + (c*sigEE_rayBend)^2 + (c*sigEE_xcorr)^2)';

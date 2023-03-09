@@ -58,7 +58,7 @@ for ndf = nstart:numel(df)
         fig = figure(1);
         fig.WindowState = 'maximized';
         for wn = 1:length(whaleNums)
-            [CTC{wn}, DET] = clickTrainCorr(DET, whaleNums(wn), kerInst, labeledInst, [3,4], 'D:\MATLAB_addons\gitHub\wheresWhaledo\CTC.params');
+            [CTC{wn}, DET] = clickTrainCorr(DET, whaleNums(wn), labeledInst, [3,4], 'D:\MATLAB_addons\gitHub\wheresWhaledo\CTC.params');
 
             for ntdoa = 1:18
 
