@@ -1,4 +1,5 @@
 function [x, t] = quickxwavRead(tstart, tend, fs, xwavTable)
+% [x, t] = quickxwavRead(tstart, tend, fs, xwavTable)
 % Assumes time intervals do not vary. Don't use if the raw file time stamps
 % have not been verified as consistent time intervals.
 

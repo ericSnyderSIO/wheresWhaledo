@@ -3,9 +3,9 @@
 global LOC % initialize global variable
 
 % Min/max ranges of grid search:
-LOC.wxlim = [-5000, 5000];
-LOC.wylim = [-5000, 5000];
-LOC.wzlim = [-200, 1350];
+LOC.wxlim = [-4000, 4000];
+LOC.wylim = [-4000, 4000];
+LOC.wzlim = [-50, 1350];
 
 LOC.Nx = 101; % number of grid points in x
 LOC.Ny = 101; % number of grid points in y
@@ -15,7 +15,9 @@ LOC.c = 1488.4; % speed of sound
 
 LOC.niter = 2; % number of iterative model generations used to converge on whale location
 
-LOC.sig_sml = 4.1178e-04;
+LOC.sig_sml = 4.12e-04;
 LOC.sig_lrg = 0.0263;
 
 LOC.driftSign = -1; % =1 if drift is added to TDOA, =-1 if drift is subtracted from TDOA
+
+LOC.topPercent = 1; % top 1% of values in L will be used for next iteration.

@@ -72,13 +72,13 @@ for ndf = nstart:numel(df)
     if ~isempty(d)
         load(fullfile(d.folder, d.name))
         
-        tlim = nan(2,1); % limits on time axes
+        
         for wn = 1:numel(whale)
             if ~isempty(whale{wn})
                 newName = [d.name(1:end-4), '_whale', num2str(wn)];
                 fig = figure(1);
                 fig.WindowState = 'maximized';
-
+                tlim = nan(2,1); % limits on time axes
                 tlim(1) = min(min(whale{wn}.TDet)); % lower limit on time axes
                 tlim(2) = max(max(whale{wn}.TDet)); % upper limit on time axes
 

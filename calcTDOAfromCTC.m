@@ -1,4 +1,7 @@
 function whale = calcTDOAfromCTC(CTC, XH, varargin)
+% whale = calcTDOAfromCTC(CTC, XH)
+% whale = calcTDOAfromCTC(CTC, XH, TDOAparamFile)
+% calculates TDOA from CTC by cross-correlating the acoustic data.
 
 
 global TDOAparam

@@ -337,7 +337,8 @@ else % if input is letter, perform associated function
                 plotDet(source)
             elseif strcmp(axisStr(1), 'x')||strcmp(axisStr(1), 'y')||strcmp(axisStr(1), 'z')
                 % selected points are from a position plot, delete entirely
-                DET(Ind, :) = nan;
+                DET.wloc(Ind, :) = nan;
+                
                 plotDet(source)
             end
 

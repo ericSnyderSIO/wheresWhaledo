@@ -93,46 +93,51 @@ sigES_drift = drift_std(3);
 %% 
 % sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + (c*sigEE_rayBend)^2 + (c*sigEE_xcorr)^2)';
 % sigEW_equation = 'sigEW = sqrt(sigEW_H^2 + (TDOA*sig_csml)^2 + (c*sigEW_rayBend)^2 + (c*sigEW_xcorr)^2)';
-% sigLargeAp_equation = 'sig = sqrt(sigEX_h^2 + sigEY_h^2 + (TDOA+drift)^2sig_clrg + c^2*(sigEX_EY_xcorr^2 + sigEX_drift^2+sigEY_drift^2))';
+% sigLargeAp_equation = 'sig = sqrt(sigEX_h^2 + sigEY_h^2 + ((TDOA+drift)*sig_clrg)^2 + c^2*(sigEX_EY_xcorr^2 + sigEX_drift^2+sigEY_drift^2))';
 
-sigEE_equation = 'sigEE = sqrt(sig2EE*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
-sig2EE(1) = sigEE_H^2;      
-sig2EE(2) = sig_csml^2;
-sig2EE(3) = c^2*sigEE_rayBend^2;
-sig2EE(4) = c^2; 
+sig_H1_equation = 'sigEE = sqrt(sig2EE*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
+sig2_H1(1) = sigEE_H^2;      
+sig2_H1(2) = sig_csml^2;
+sig2_H1(3) = c^2*sigEE_rayBend^2;
+sig2_H1(4) = c^2; 
 
-sigEW_equation = 'sigEW = sqrt(sig2EW*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
-sig2EW(1) = sigEW_H^2;      
-sig2EW(2) = sig_csml^2;
-sig2EW(3) = c^2*sigEE_rayBend^2;
-sig2EW(4) = c^2; 
+sig_H2_equation = 'sigEW = sqrt(sig2EW*[ones(1,6); TDOA.^2; ones(1,6); sig_xcov.^2])';
+sig2_H2(1) = sigEW_H^2;      
+sig2_H2(2) = sig_csml^2;
+sig2_H2(3) = c^2*sigEE_rayBend^2;
+sig2_H2(4) = c^2; 
 
 % large aperture variance:
 sigLargeAp_equation = 'sig_lrg = sqrt(sum(sig2lrg.*[ones(1,6); (TDOA+drift).^2; ones(1,6); sig_xcov^2]))';
 
 
 % variance due to hydrophone locations:
-sig2lrg(1, 1) = sigEE_h^2 + sigEW_h^2;
-sig2lrg(1, 2) = sigEE_h^2 + sigEN_h^2;
-sig2lrg(1, 3) = sigEE_h^2 + sigES_h^2;
-sig2lrg(1, 4) = sigEW_h^2 + sigEN_h^2;
-sig2lrg(1, 5) = sigEW_h^2 + sigES_h^2;
-sig2lrg(1, 6) = sigEN_h^2 + sigES_h^2;
+sig2_lrg(1, 1) = sigEE_h^2 + sigEW_h^2;
+sig2_lrg(1, 2) = sigEE_h^2 + sigEN_h^2;
+sig2_lrg(1, 3) = sigEE_h^2 + sigES_h^2;
+sig2_lrg(1, 4) = sigEW_h^2 + sigEN_h^2;
+sig2_lrg(1, 5) = sigEW_h^2 + sigES_h^2;
+sig2_lrg(1, 6) = sigEN_h^2 + sigES_h^2;
 
 % variance due to sound speed (calculated from ray tracing)
-sig2lrg(2, 1:6) = sig_clrg^2;
+sig2_lrg(2, 1:6) = sig_clrg^2;
 
 % variance from drift:
-sig2lrg(3, 1) = c^2*sigEW_drift^2;
-sig2lrg(3, 2) = c^2*sigEN_drift^2;
-sig2lrg(3, 3) = c^2*sigES_drift^2;
-sig2lrg(3, 4) = c^2*(sigEW_drift^2 + sigEN_drift^2);
-sig2lrg(3, 5) = c^2*(sigEW_drift^2 + sigES_drift^2);
-sig2lrg(3, 6) = c^2*(sigEN_drift^2 + sigES_drift^2);
+sig2_lrg(3, 1) = c^2*sigEW_drift^2;
+sig2_lrg(3, 2) = c^2*sigEN_drift^2;
+sig2_lrg(3, 3) = c^2*sigES_drift^2;
+sig2_lrg(3, 4) = c^2*(sigEW_drift^2 + sigEN_drift^2);
+sig2_lrg(3, 5) = c^2*(sigEW_drift^2 + sigES_drift^2);
+sig2_lrg(3, 6) = c^2*(sigEN_drift^2 + sigES_drift^2);
 
 % variance in TDOA (must incorporate SNR, to be calculated for each
 % detection)
-sig2lrg(4, 1:6) = c^2;
+sig2_lrg(4, 1:6) = c^2;
 
 
-save('sigmaValues', 'sigLargeAp_equation', 'sigEE_equation', 'sigEW_equation', 'sig2EE', 'sig2EW', 'sig2lrg')
+save('sigmaValues', 'sigLargeAp_equation', 'sig_H1_equation', 'sig_H2_equation', 'sig2_H1', 'sig2_H2', 'sig2_lrg')
+
+%% simplified sigmas:
+% sigEE_equation = 'sigEE = sqrt(sigEE_H^2 + (TDOA*sig_csml)^2 + (c*sigEE_rayBend)^2 + (c*sigEE_xcorr)^2)';
+% sigEW_equation = 'sigEW = sqrt(sigEW_H^2 + (TDOA*sig_csml)^2 + (c*sigEW_rayBend)^2 + (c*sigEW_xcorr)^2)';
+% sigLargeAp_equation = 'sig = sqrt(sigEX_h^2 + sigEY_h^2 + ((TDOA+drift)*sig_clrg)^2 + c^2*(sigEX_EY_xcorr^2 + sigEX_drift^2+sigEY_drift^2))';

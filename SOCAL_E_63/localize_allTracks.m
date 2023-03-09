@@ -68,8 +68,8 @@ H2 = [hyd2.hydPos(2,:)-hyd2.hydPos(1,:);
     hyd2.hydPos(4,:)-hyd2.hydPos(3,:)];
 
 
-% load variance data:
-load('D:\MATLAB_addons\gitHub\wheresWhaledo\SOCAL_E_63\sigmaValues.mat')
+% % load variance data:
+% load('D:\MATLAB_addons\gitHub\wheresWhaledo\SOCAL_E_63\sigmaValues.mat')
 
 % load model:
 M = load('B:\TDOAmodel_50dx50dy15dz.mat');
@@ -170,10 +170,12 @@ for ndf = nstart:numel(df)
             plot(whale{wn}.TDet(Iuse, 1), az, '.', 'color', colorMat(wn+2, :))
             hold on
             title('EE Angle')
+            datetick
             ylabel('az')
 
             subplot(6, 3, sporder{5})
             plot(whale{wn}.TDet(Iuse, 1), el, '.', 'color', colorMat(wn+2, :))
+            datetick
             hold on
             ylabel('el')
 
@@ -190,16 +192,19 @@ for ndf = nstart:numel(df)
             plot(whale{wn}.TDet(Iuse, 1), az, '.', 'color', colorMat(wn+2, :))
             hold on
             title('EW Angle')
+            datetick
             ylabel('az')
 
             subplot(6, 3, sporder{7})
             plot(whale{wn}.TDet(Iuse, 1), el, '.', 'color', colorMat(wn+2, :))
             hold on
+            datetick
             ylabel('el')
 
             for sp = 1:6
                 subplot(6, 3, sporder{7+sp})
                 plot(whale{wn}.TDet, whale{wn}.TDOA(:, 12+sp), '.', 'color', colorMat(wn+2, :))
+                datetick
                 hold on
                 if sp==1
                     title('Large ap TDOA')
