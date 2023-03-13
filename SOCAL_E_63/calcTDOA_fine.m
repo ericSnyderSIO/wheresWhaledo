@@ -1,29 +1,13 @@
-clear all
-%% User inputs:
+function calcTDOA_fine(trackName, foldername, arrno)
 
-arrno = 2;  % which array is primary array (must be a 4ch)
-% trackName = '180611_1030';
-% trackName = 'track19_180323_104620'; 
-% trackName = 'track43_180327_084016';                          % base name of track
-% trackName = 'track78_180402_132525';
-trackName = 'track268_180505_123443';
-detFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];  % folder containing detection file
-trackFolder = ['D:\SOCAL_E_63\tracking\interns2022\AMS_Datasets\', trackName];   % folder where CTC TDOA is saved and where track will be saved
 saveFileName = [trackName, '_fineTDOA_', 'Array', num2str(arrno)];
 
 % load detection file:
-detDir = dir(fullfile(detFolder, ['*det*', trackName, '*.mat']));
+detDir = dir(fullfile(foldername, ['*det*', trackName, '*.mat']));
 load(fullfile(detDir.folder, detDir.name));
-
-% load drift data:
-load('D:\SOCAL_E_63\xwavTables\drift') % drift (sec) and tdrift (datenum) for EW, EN, ES relative to EE
 
 % load partial sigma values
 load('D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\sigmaValues.mat')
-
-% load coarse grid model:
-Mcoarse = load('B:\TDOAmodel_200m.mat');
-MfineFolder = 'B:\modelFiles_10mFrom200m'; % folder containing fine grid model
 
 % get brushing params (for plotting consistently with other functions)
 global brushing
@@ -39,8 +23,8 @@ XH{3} = xwavTable;
 load('D:\SOCAL_E_63\xwavTables\SOCAL_E_63_ES_xwavLookupTable');
 XH{4} = xwavTable;
 
-load('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat')  % calculated in D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\calcSigma.m
-h = [0,0,0; h];
+% load('D:\SOCAL_E_63\xwavTables\instrumentLocs.mat')  % calculated in D:\MATLAB_addons\gitHub\wheresWhaledo\experiments\calcSigma.m
+% h = [0,0,0; h];
 
 txcwin = .004;  % size of window loaded in around each detection
 % txcwin = .01;
@@ -52,8 +36,8 @@ maxSigLength = (max(fs)*txcwin); % maximum length in samples of acoustic data in
 pulseLength4ch = 64; % click duration in 4ch instruments, samples
 spd = 60*60*24; % seconds per day, for converting datenum to seconds
 xcovInd = [2,3,4,7,8,12]; % indicices of xcov output to use for TDOA pairs
-maxTDOA_lrg = 1500/1480 + max(max(abs(drift))); % max large ap tdoa
-maxLags_lrg = ceil(maxTDOA_lrg*fs(4)) + pulseLength4ch*2; % maximum number of lags for large ap TDOA (samples)
+% maxTDOA_lrg = 1500/1480 + .4; % max large ap tdoa
+% maxLags_lrg = ceil(maxTDOA_lrg*fs(4)) + pulseLength4ch*2; % maximum number of lags for large ap TDOA (samples)
 maxTDOA_sml = 1.1/1480; % max small ap TDOA
 maxLags_sml = ceil(maxTDOA_sml*fs(1)) + pulseLength4ch; % maximum number of lags for small ap TDOA (samples)
 SNRthresh = 1; % minimum SNR used in calculations
@@ -75,16 +59,16 @@ if arrno==1
     tdoaSign = [-1, -1, -1]; % sign swap on TDOA (depending on order of hydrophone pairs)
 
     % which hydrophone pairs are used in each CTC TDOA:
-    hpairCTC(1, :) = [1, 2];
-    hpairCTC(2, :) = [1, 3];
-    hpairCTC(3, :) = [1, 4];
+%     hpairCTC(1, :) = [1, 2];
+%     hpairCTC(2, :) = [1, 3];
+%     hpairCTC(3, :) = [1, 4];
 
     % when converting CTC TDOA (only between primary array and other
     % arrays) and TDOA for comparison with model (every possible hydrophone
     % pair), we need to know which arrays are accounted for and which need
     % to be caclulated:
-    ctcPairs = [1,2,3]; % which TDOA indices are already calculated
-    otherPairs = [4,5,6]; % which ones need to be obtained
+%     ctcPairs = [1,2,3]; % which TDOA indices are already calculated
+%     otherPairs = [4,5,6]; % which ones need to be obtained
 
 elseif arrno==2
     otherArrays = [1,3,4];  % indices of DET containing other arrays besides the primary array
@@ -92,12 +76,12 @@ elseif arrno==2
     %   i.e., if 1-2 then no change, if 2-1 then tdoaSign=-1)
 
     % which hydrophone pairs are used in each TDOA:
-    hpairCTC(1, :) = [1, 2];
-    hpairCTC(2, :) = [2, 3];
-    hpairCTC(3, :) = [2, 4];
+%     hpairCTC(1, :) = [1, 2];
+%     hpairCTC(2, :) = [2, 3];
+%     hpairCTC(3, :) = [2, 4];
 
-    ctcPairs = [1,4,5]; % which TDOA indices are already calculated
-    otherPairs = [2,3,6]; % which ones need to be obtained
+%     ctcPairs = [1,4,5]; % which TDOA indices are already calculated
+%     otherPairs = [2,3,6]; % which ones need to be obtained
 
 end
 
@@ -117,12 +101,12 @@ hpair(6, :) = [3, 4];
 %% load detection files and click-train files:
 
 % identify .mat file with 'det' and trackname in its filename:
-detDir = dir(fullfile(detFolder, ['*det*', trackName, '*.mat']));
+detDir = dir(fullfile(foldername, ['*det*', trackName, '*.mat']));
 load(fullfile(detDir.folder, detDir.name)) % Detection data
 
 % load click train correlation data:
 % identify .mat file with 'CTC', trackname, and array number in its filename:
-ctcDir = dir(fullfile(trackFolder, [trackName,'*CTC_Array', num2str(arrno), '*.mat']));
+ctcDir = dir(fullfile(foldername, [trackName,'*CTC_Array', num2str(arrno), '*.mat']));
 load(fullfile(ctcDir.folder, ctcDir.name));
 CTC = whale; % Click train correlation data
 
@@ -158,7 +142,6 @@ for wn = 1:numel(CTC) % iterate through each whale number
         whale{wn}.IndUsed = zeros(length(CTC{wn}.TDet), 18);
         whale{wn}.label = CTC{wn}.label;
         for ndet = 1:length(CTC{wn}.TDet) % iterate through each remaining detection
-
 
             % *****************************************************************
             %  STEP 1: Pull in acoustic data and calculate TDOAs and SNR
@@ -198,39 +181,6 @@ for wn = 1:numel(CTC) % iterate through each whale number
                     SNR(smallTDOAInd{arrno}(ixcov)) = sigPk2Pk/noisePk2Pk;
                 end
 
-            X = zeros(maxSigLength, 4);         % initialize matrix for all instruments' data
-
-
-            % load data for primary array
-            tstartPrimaryArray = CTC{wn}.TDet(ndet)-txcwin/spd/2;   % beginning of period around click
-            tendPrimaryArray = tstartPrimaryArray + txcwin/spd;                 % end of period around click
-            [x, t{arrno}] = quickxwavRead(tstartPrimaryArray, tendPrimaryArray, fs(arrno), XH{arrno}); % load data and time vector (x and t)
-            xf = filtfilt(b{arrno}, a{arrno}, x); % filtered time series around detection
-
-
-
-            % *** calculate small ap TDOA and SNR: ***
-            [tdetDif, Idet] = min(abs(DET{arrno}.TDet-CTC{wn}.TDet(ndet)));
-            [xcsml, lags] = xcov(xf, maxLags_sml);
-
-            if spd*tdetDif<1e-3 && DET{arrno}.color(Idet)==CTC{wn}.label(ndet) % this is the correct detection
-                TDOA(smallTDOAInd{arrno}) = DET{arrno}.TDOA(Idet, :);
-
-                ndoa = round(TDOA(smallTDOAInd{arrno}).*fs(arrno)); % TDOA in samples
-
-                for ixcov = 1:length(xcovInd)
-                    indNDOA = find(lags==ndoa(ixcov));
-                    
-                    % indices of signal:
-                    indSig = max([1, indNDOA-pulseLength4ch/2]):min([length(xcsml), (indNDOA+pulseLength4ch/2)]);
-                    % indices of noise:
-                    indNoise = 1:length(xcsml); % all indices
-                    indNoise(indSig) = []; % remove indices of signal
-                    sigPk2Pk = range(xcsml(indSig, xcovInd(ixcov)));
-                    noisePk2Pk = range(xcsml(indNoise, xcovInd(ixcov)));
-                    SNR(smallTDOAInd{arrno}(ixcov)) = sigPk2Pk/noisePk2Pk;
-                end
-
             end
 
             % upsample four channel data and put all instruments into one matrix
@@ -264,82 +214,7 @@ for wn = 1:numel(CTC) % iterate through each whale number
                         [xcsml, lags] = xcov(xf, maxLags_sml);
 
 %                         if (spd*tdetDif<.1 && DET{thisInstNo}.color(Idet)==CTC{wn}.label(ndet))||spd*tdetDif<1e-3 % this is probably the correct detection
-                        if spd*tdetDif<1e-2
-
-                            TDOA(smallTDOAInd{thisInstNo}) = DET{thisInstNo}.TDOA(Idet, :);
-
-                            ndoa = round(TDOA(smallTDOAInd{thisInstNo}).*fs(thisInstNo)); % TDOA in samples
-
-                            for ixcov = 1:length(xcovInd)
-                                indNDOA = find(lags==ndoa(ixcov));
-                                
-                                % indices of signal:
-                                indSig = max([1, indNDOA-pulseLength4ch/2]):min([length(xcsml), (indNDOA+pulseLength4ch/2)]);
-                                % indices of noise:
-                                indNoise = 1:length(xcsml); % all indices
-                                indNoise(indSig) = []; % remove indices of signal
-                                sigPk2Pk = range(xcsml(indSig, xcovInd(ixcov)));
-                                noisePk2Pk = range(xcsml(indNoise, xcovInd(ixcov)));
-                                SNR(smallTDOAInd{thisInstNo}(ixcov)) = sigPk2Pk/noisePk2Pk;
-                            end
-
-                        end
-                       
-                    end
-                else % this is 1ch data, put into X
-                    X(1:min([maxSigLength, length(xf)]), thisInstNo) = xf(1:min([maxSigLength, length(xf)]));
-                end
-            end
-
-            % ************ calculate large ap TDOA ***********************
-            % time difference of arrival from CTC:
-            if arrno ==1
-                tdoaCTC(1:3) = CTC{wn}.TDOA(ndet, :, 1);
-                tdoaCTC(4) = tdoaCTC(2)-tdoaCTC(1);
-                tdoaCTC(5) = tdoaCTC(3)-tdoaCTC(1);
-                tdoaCTC(6) = tdoaCTC(3)-tdoaCTC(2);
-            elseif arrno==2
-                tdoaCTC([1, 4, 5]) = CTC{wn}.TDOA(ndet, :, 1);
-                tdoaCTC(2) = tdoaCTC(1)+tdoaCTC(4);
-                tdoaCTC(3) = tdoaCTC(1)+tdoaCTC(5);
-                tdoaCTC(6) = tdoaCTC(5)-tdoaCTC(4);
-            end
-
-            Ibad = find(CTC{wn}.TDOA(ndet, :, 1)<=-50); % bad TDOA
-            tdoaCTC(Ibad) = nan(size(Ibad));
-
-            % upsample four channel data and put all instruments into one matrix
-            xi = interpft(xf(:, 1), maxSigLength);     % upsample primary array's data
-            X(:, arrno) = xi;                      % put into matrix of all acoustic data
-
-            % determine which CTC TDOAs were good:
-            Igood = find(~isnan(CTC{wn}.TDOA(ndet, :, 1)));
-
-            % iterate through each instrument with a "good" TDOA and pull in
-            % acoustic data:
-            for ia = 1:length(Igood)
-
-                thisInstNo = otherArrays(Igood(ia)); % which array is being accessed in this loop
-                thisTDOAno = Igood(ia); % which column in TDOA is being used
-
-                tstart = tstartPrimaryArray + tdoaSign(thisTDOAno)*CTC{wn}.TDOA(ndet, thisTDOAno, 1)/spd;
-                tend = tstart + txcwin/spd;
-                [x, t{thisInstNo}] = quickxwavRead(tstart, tend, ...
-                    fs(thisInstNo), XH{thisInstNo});             % load data and time vector (x and t)
-                xf = filtfilt(b{thisInstNo}, a{thisInstNo}, x);  % filter and save data
-
-                if fs(thisInstNo)==100e3 % if this is 4ch data, upsample and put into X
-                    
-                    if max(xf(:, 1) >th) % test to see if click is higher than threshold, if not don't bother with it
-                        xi = interpft(xf(:, 1), maxSigLength); % upsample array's data
-                        X(:, thisInstNo) = xi;                             % put into matrix of all acoustic data
-
-                        % calculate small aperture TDOA:
-                        [tdetDif, Idet] = min(abs(DET{thisInstNo}.TDet+tdoaSign(thisTDOAno)*CTC{wn}.TDOA(ndet, thisTDOAno, 1)/spd-CTC{wn}.TDet(ndet)));
-                        [xcsml, lags] = xcov(xf, maxLags_sml);
-
-%                         if (spd*tdetDif<.1 && DET{thisInstNo}.color(Idet)==CTC{wn}.label(ndet))||spd*tdetDif<1e-3 % this is probably the correct detection
-                        if spd*tdetDif<1e-2
+                        if spd*tdetDif<.1
 
                             TDOA(smallTDOAInd{thisInstNo}) = DET{thisInstNo}.TDOA(Idet, :);
 
@@ -403,19 +278,19 @@ for wn = 1:numel(CTC) % iterate through each whale number
             TDOA(TDOA<-20) = nan; % replace bad TDOAs with NaN
             SNR(isnan(TDOA)) = nan;
 
-            % *****************************************************************
-            % STEP 2: Calculate drift, sigma values and LMSE w/ coarse model
-            % *****************************************************************
+%             % *****************************************************************
+%             % STEP 2: Calculate drift, sigma values and LMSE w/ coarse model
+%             % *****************************************************************
+% 
+%             % Calculate drift:
+%             for idrift = 1:3
+%                 driftCorrection(idrift) = feval(Dpoly{idrift},  CTC{wn}.TDet(ndet));
+%             end
+%             driftCorrection(4) = driftCorrection(2) - driftCorrection(1);
+%             driftCorrection(5) = driftCorrection(3) - driftCorrection(1);
+%             driftCorrection(6) = driftCorrection(3) - driftCorrection(2);
 
-            % Calculate drift:
-            for idrift = 1:3
-                driftCorrection(idrift) = feval(Dpoly{idrift},  CTC{wn}.TDet(ndet));
-            end
-            driftCorrection(4) = driftCorrection(2) - driftCorrection(1);
-            driftCorrection(5) = driftCorrection(3) - driftCorrection(1);
-            driftCorrection(6) = driftCorrection(3) - driftCorrection(2);
-
-            TDOA(13:18) = TDOA(13:18) + driftCorrection;
+%             TDOA(13:18) = TDOA(13:18) + driftCorrection;
 
             sig2_xcov = 1./(bandWidth4ch^2.*SNR);  % variance of the TDOA due to imprecision in cross-covariation
             % Note on above: I only use 4ch bandwidth, because after xcov no energy should remain above 4ch nyquist
@@ -429,7 +304,7 @@ for wn = 1:numel(CTC) % iterate through each whale number
             % make sure detection has enough data to ues in localization:
             % Need at least one small ap and one large ap
 
-            [XC, lags] = xcov(X); % Cross-covariate the data
+
 
             %             LMSEcoarse = sum(1./(2*sig2(Iuse)).*(Mcoarse.TDOA(:, Iuse)-TDOA(Iuse)).^2, 2);
             %             IuseLrg = Iuse(Iuse>=13);
@@ -453,14 +328,6 @@ for wn = 1:numel(CTC) % iterate through each whale number
             %             Mfine = load(fullfile(MfineFolder, modelFile));
 
             %             LMSEfine = sum(1./(2*sig2(Iuse)).*(Mfine.TDOA(:, Iuse)-TDOA(Iuse)).^2, 2);
-
-
-            %             IuseLrg = Iuse(Iuse>=13);
-            %             Llrg = 1./2*sqrt(sum(sig2(IuseLrg))).*sum((Mfine.TDOA(:, IuseLrg)-TDOA(IuseLrg)).^2, 2);
-            %             Iusesml = Iuse(Iuse<=12);
-            %             Lsml = 1./2*sqrt(sum(sig2(Iusesml))).*sum((Mfine.TDOA(:, Iusesml)-TDOA(Iusesml)).^2, 2);
-
-
 
             %             IuseLrg = Iuse(Iuse>=13);
             %             Llrg = 1./2*sqrt(sum(sig2(IuseLrg))).*sum((Mfine.TDOA(:, IuseLrg)-TDOA(IuseLrg)).^2, 2);
@@ -514,7 +381,7 @@ end
 % ylim([-5000, 5000])
 % pbaspect([1,1,1])
 
-figure(2)
+fig = figure(2);
 for sp = 1:6
     subplot(6,1,sp)
     for wn = 1:numel(whale)
@@ -532,9 +399,9 @@ for sp = 1:6
 
 end
 title('EE TDOA pairs')
+saveas(fig, fullfile(foldername, [saveFileName, '_TDOA_EE']))
 
-
-figure(3)
+fig = figure(3);
 for sp = 1:6
     subplot(6,1,sp)
 
@@ -552,9 +419,9 @@ for sp = 1:6
     hold off
 
 end
+saveas(fig, fullfile(foldername, [saveFileName, '_TDOA_EW']))
 
-
-figure(4)
+fig = figure(4);
 for sp = 1:6
     subplot(6,1,sp)
     for wn = 1:numel(whale)
@@ -568,9 +435,10 @@ for sp = 1:6
             %         scatter(whale{wn}.TDet(I), whale{wn}.TDOA(I, sp),  'x')
         end
     end
+    
     hold off
 
 end
+saveas(fig, fullfile(foldername, [saveFileName, '_TDOA_lrg']))
 
-
-save(fullfile(trackFolder, saveFileName), 'whale')
+save(fullfile(foldername, saveFileName), 'whale')
