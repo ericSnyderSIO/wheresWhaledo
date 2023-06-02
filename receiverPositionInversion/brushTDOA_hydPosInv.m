@@ -188,8 +188,11 @@ Ri = sqrt(xi.^2 + yi.^2 + zi.^2); % distance between ship and hydrophone
 % hydrophone positions.
 
 
-TDOAbrush.S = ([xi.', yi.', zi.'])./Ri.'; % unit vector pointing from hydrophone to ship
-
+if size(xi, 1) == 1
+    TDOAbrush.S = ([xi.', yi.', zi.'])./Ri.'; % unit vector pointing from hydrophone to ship
+elseif size(xi, 1)>1
+    TDOAbrush.S = ([xi, yi, zi])./Ri; % unit vector pointing from hydrophone to ship
+end
 TDOAbrush.H = (-TDOAbrush.S\(TDOAbrush.TDOA.*TDOAbrush.c)).'; % initial H matrix estimate
 
 % Calculate expected TDOA based on ship locations and assumed H Matrix

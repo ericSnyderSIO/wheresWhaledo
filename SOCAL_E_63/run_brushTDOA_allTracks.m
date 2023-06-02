@@ -1,6 +1,6 @@
-fp{1} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track369_180520_120810\SOCAL_E_63_track369_180520_120810_ericMod_localized.mat';
+% fp{1} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track369_180520_120810\SOCAL_E_63_track369_180520_120810_ericMod_localized.mat';
 fp{2} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track30_180324_205700\SOCAL_E_63_track30_180324_205700_ericMod_localized.mat';
-fp{3} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track15_180320_060600\SOCAL_E_63_track15_180320_060600_ericMod_localized.mat';
+% fp{3} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track15_180320_060600\SOCAL_E_63_track15_180320_060600_ericMod_localized.mat';
 fp{4} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track179_180422_091708\SOCAL_E_63_track179_180422_091708_ericMod_localized.mat';
 fp{5} = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track600_180611_110414\SOCAL_E_63_track600_180611_110414_ericMod_localized.mat';
 

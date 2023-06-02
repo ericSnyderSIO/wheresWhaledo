@@ -1,4 +1,4 @@
-function whaleLoc = loc3D_DOAintersect(DET, hydLoc, paramFile)
+function whale = loc3D_DOAintersect(DET, hydLoc, paramFile)
 % produces a rough 3-D track estimate from the period of time with
 % overlapping detections on both four-channel arrays.
 % whaleLoc is a struct with the 3-D tracks
@@ -57,15 +57,16 @@ for wn = 1:length(colorNums) % iterate through each whale number
                 t2_used(i) = t2(i2);
             end
         end
-        whaleLoc{wn}.xyz = w;
-        whaleLoc{wn}.t1 = t1_used;
-        whaleLoc{wn}.t2 = t2_used;
+        whale{wn}.wloc = w;
+        whale{wn}.TDet = t1_used;
+        whale{wn}.t1 = t1_used;
+        whale{wn}.t2 = t2_used;
         [lat, lon] = xy2latlon_wgs84(w(1, :), w(2, :), h0(1), h0(2));
         z = w(3,:) - abs(h0(3));
-        whaleLoc{wn}.LatLonDepth = [lat; lon; z];
-        whaleLoc{wn}.werr = werr;
+        whale{wn}.LatLonDepth = [lat; lon; z];
+        whale{wn}.werr = werr;
         
-        scatter3(whaleLoc{wn}.xyz(:, 1), whaleLoc{wn}.xyz(:, 2), whaleLoc{wn}.xyz(:, 3), ...
+        scatter3(whale{wn}.xyz(:, 1), whale{wn}.xyz(:, 2), whale{wn}.xyz(:, 3), ...
             24, brushing.params.colorMat(wn+2, :), 'filled')
 
     end
