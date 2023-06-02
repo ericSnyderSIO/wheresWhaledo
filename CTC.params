@@ -19,7 +19,7 @@ CTCparam.hpair(6, :) = [3, 4]; % first large ap TDOA is inst3 - inst4
 
 % General CTC parameters:
 CTCparam.fsct = 10e3; % sampling rate used for click train correlation (Hz)
-CTCparam.twin= 40; % window size used in click train correlation (seconds)
+CTCparam.twin= 30; % window size used in click train correlation (seconds)
 CTCparam.Nhann = round(20e-3*CTCparam.fsct); % number of elements in hanning window used in place of each detection
 CTCparam.Wk = hann(CTCparam.Nhann); % window used in place of each detection in a click train
 CTCparam.maxTDOA = 1100/1480 + .3; % maximum TDOA possible (distance between instruments / sound speed + potential drift) (NOTE: I overestimate this value to ensure I include all possible TDOAs)

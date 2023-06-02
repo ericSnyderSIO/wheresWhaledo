@@ -4,7 +4,7 @@ global detParam
 loadParams(paramFile)
 
 spd = 60*60*24;
-detParam.twintwin = 30; % 30 second window;
+detParam.twintwin = 30; % 30 second window
 
 t1 = tstart;
 t2 = t1 + detParam.twin/spd;
@@ -53,7 +53,7 @@ while t2<=tend
                 % find 3 biggest peaks in xcov
                 [xcpks, Nloc] = findpeaks(xc(:, detParam.xcRow(pn)), 'MinPeakDistance', 12, 'NPeaks', 3', 'SortStr', 'descend');
 
-                if (0.8*xcpks(1))>xcpks(2) % largest peak is significantly bigger than 2nd largest
+                if (0.9*xcpks(1))>xcpks(2) % largest peak is significantly bigger than 2nd largest
                     tdoa(pn) = lags(Nloc(1))/detParam.fs;
                     xamp(pn) = xcpks(1);
                 else % largest peak is not much bigger than 2nd largest - reflection likely causing ambiguity

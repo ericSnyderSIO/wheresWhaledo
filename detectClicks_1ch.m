@@ -26,8 +26,9 @@ detTable.('DAmp') = zeros(10000, 1);
 detTable.('TDet') = zeros(10000, 1);
 
 while t2<=tend
+
     [x, t] = quickxwavRead(t1, t2, detParam.fs, XH);
-    
+
     xf = filtfilt(b, a, x);
     if max(xf)>=detParam.th
     

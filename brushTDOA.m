@@ -338,7 +338,10 @@ else % if input is letter, perform associated function
             elseif strcmp(axisStr(1), 'x')||strcmp(axisStr(1), 'y')||strcmp(axisStr(1), 'z')
                 % selected points are from a position plot, delete entirely
                 DET.wloc(Ind, :) = nan;
-                
+                DET.CIx(Ind, :) = nan;
+                DET.CIy(Ind, :) = nan;
+                DET.CIz(Ind, :) = nan;
+                DET.TDOA(Ind, :) = nan;
                 plotDet(source)
             end
 
@@ -368,14 +371,10 @@ else % if input is letter, perform associated function
             [hManager.WindowListenerHandles.Enabled] = deal(false);  % HG2 (on 2014b or later)
             set(source, 'KeyPressFcn', @keyPressCallback);
         case 'r' % refresh (return zoom to full encounter, set plot boundaries to encompass only retained detections)
-            
             plotDet(source)
             
         case 'u' % undo
             DET = DETprev;
-
-            
-
     end
 end
 

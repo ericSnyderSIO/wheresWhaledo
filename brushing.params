@@ -6,7 +6,7 @@ global brushing % initialize global variable
 brushing.params.colorMat(1, :) = [0.600000, 0.600000, 0.600000]; % acoustic data 
 brushing.params.colorMat(2, :) = [0.000000, 0.000000, 0.000000]; % Unlabeled detections 
 brushing.params.colorMat(3, :) = [0.934314, 0.103922, 0.106711]; % Whale 1 
-brushing.params.colorMat(4, :) = [0.010980, 0.207843, 0.520196]; % Whale 2 
+brushing.params.colorMat(4, :) = [0.250980, 0.457843, 0.750196]; % Whale 2 
 brushing.params.colorMat(5, :) = [0.912157, 0.649020, 0.135294]; % Whale 3 
 brushing.params.colorMat(6, :) = [0.415686, 0.239216, 0.803922]; % Whale 4 
 brushing.params.colorMat(7, :) = [0.119608, 0.625490, 0.027451]; % Whale 5 

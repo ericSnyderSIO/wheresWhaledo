@@ -1,6 +1,6 @@
-function [CTC, DETout] = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, unlabeledInst, varargin)
-% whale = clickTrainCorr(DETin, colorNum, kerInst, labeledInst)
-% whale = clickTrainCorr(DETin, colorNum, kerInst, labeledInst, paramFile)
+function [CTC, DETout] = clickTrainCorr_old(DETin, whaleNum, kerInst, labeledInst, unlabeledInst, varargin)
+% [CTC, DETout]  = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, unlabeledInst)
+% [CTC, DETout]  = clickTrainCorr(DETin, whaleNum, kerInst, labeledInst, unlabeledInst, paramFile)
 % Performs click train correlation (CTC) on DET tables.
 %
 % INPUTS:

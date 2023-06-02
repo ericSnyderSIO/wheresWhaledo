@@ -2,5 +2,5 @@
 
 global TDOAbrush
 
-TDOAbrush.recLoc = [32.65875,  -119.47708, -1322.5795]; % Lat, Lon, and depth of receiver
+TDOAbrush.recLoc = [32.658823305463301,  -119.4770506047520, -1338.263218627637+6]; % Lat, Lon, and depth of receiver
 TDOAbrush.c = 1488.4; % speed of sound at receiver

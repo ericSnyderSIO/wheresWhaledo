@@ -13,8 +13,9 @@ dnx = nx2-nx1 + 1;
 if dnx==1 % data contained in one xwav
     ind(1) = round((tstart-xwavTable.('startTime')(nx1))*spd*fs)+1;
     ind(2) = round((tend-xwavTable.('startTime')(nx1))*spd*fs);
-    
+
     [x, ~] = audioread(fullfile(xwavTable.('inpath'){nx1}, xwavTable.('infile'){nx1}), ind, 'native');
+   
     t = tstart + (1:length(x))/fs/spd;
     
 elseif dnx==2 % data span 2 xwavs
@@ -31,7 +32,8 @@ elseif dnx==2 % data span 2 xwavs
     ind(1) = 1;
     ind(2) = round((tend-xwavTable.('startTime')(nx2))*spd*fs);
     
-    [x2, ~] = audioread(fullfile(xwavTable.('inpath'){nx1}, xwavTable.('infile'){nx1}), ind, 'native');
+    [x2, ~] = audioread(fullfile(xwavTable.('inpath'){nx2}, xwavTable.('infile'){nx2}), ind, 'native');
+   
     t2 = tstart + (1:length(x2))/fs/spd;
     
     x = [x1; x2];

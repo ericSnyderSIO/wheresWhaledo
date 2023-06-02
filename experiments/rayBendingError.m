@@ -82,6 +82,9 @@ for ir = 1:size(Arr, 1)
     end
 end
 
+inc_err = (sqrt(inc_ray-inc_true).^2);
+inc_err(inc_err>20) = [];
+
 col = parula(size(Arr, 2));
 figure(5)
 for iz = 1:size(Arr, 2)
@@ -185,6 +188,9 @@ title('Travel Time Error')
 xlabel('range (m)')
 ylabel('error')
 
+travelTimeErr_all = [HARP{1}.travelTimeError, HARP{2}.travelTimeError];
+Irem =find (travelTimeErr_all>=1);
+travelTimeErr_all(Irem) = [];
 sig_travelTime = mean([HARP{1}.travelTimeError, HARP{2}.travelTimeError])
 
 %% Make environtment file

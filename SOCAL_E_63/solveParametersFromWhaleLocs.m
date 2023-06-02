@@ -130,6 +130,7 @@ for ndf = 1:numel(fdir)
 
                     % calculate error from expected TDOA
                     E.measTDOA(ndet, :) = whale{wn}.TDOA(Iuse(i), 13:18);
+                    E.smlTDOA(ndet, :) = whale{wn}.TDOA(Iuse(i), 1:12);
                     E.TDet(ndet) = whale{wn}.TDet(Iuse(i));
 
                     for itdoa = 1:6
@@ -216,3 +217,162 @@ end
 legend('TDOAexp-TDOAmeas', 'linear fit', 'measured drift')
 
 %%
+for ndet = 1:length(E.wloc_mod)
+    wloc = E.wloc_mod(ndet, :);
+
+    for arrno = 1:2
+
+        s = wloc - hloc(arrno,:);
+        s = s./sqrt(sum(s.^2));
+
+        doa{arrno}(ndet, :) = s;
+        tdoaExp = s*H{arrno}.'./c;
+
+        E.smlTDOA_exp(ndet, (1:6) + 6*(arrno-1)) = tdoaExp;
+    end
+
+end
+
+figure(111)
+
+sporder = [1:2:12, 2:2:12];
+for sp = 1:12
+
+
+    subplot(6,2,sporder(sp))
+    histogram(E.smlTDOA(:,sp), linspace(-1e-3, 1e-3, 50))
+    %     hold on
+    %     plot(E.smlTDOA(:,sp), '.')
+    %     hold off
+end
+
+%%
+
+Halt{1} = (doa{1}\E.smlTDOA(:, 1:6)).'./c;
+Halt{2} = (doa{2}\E.smlTDOA(:, 7:12)).'./c;
+
+
+%%
+
+Smat = zeros(9, length(doa{1})*6);
+
+Smat(1:3, 1:6:end) = -doa{1}.';
+Smat(4:6, 2:6:end) = -doa{1}.';
+Smat(7:9, 3:6:end) = -doa{1}.';
+Smat(1:3, 4:6:end) = doa{1}.';
+Smat(4:6, 4:6:end) = -doa{1}.';
+Smat(1:3, 5:6:end) = doa{1}.';
+Smat(7:9, 5:6:end) = -doa{1}.';
+Smat(4:6, 6:6:end) = doa{1}.';
+Smat(7:9, 6:6:end) = -doa{1}.';
+
+D = zeros(1, length(doa{1})*6);
+D(1:6:end) = c.*E.smlTDOA(:,1);
+D(2:6:end) = c.*E.smlTDOA(:,2);
+D(3:6:end) = c.*E.smlTDOA(:,3);
+D(4:6:end) = c.*E.smlTDOA(:,4);
+D(5:6:end) = c.*E.smlTDOA(:,5);
+D(6:6:end) = c.*E.smlTDOA(:,6);
+
+hposTemp = D.'\-Smat.';
+hpos{1} = [0,0,0; hposTemp(1:3); hposTemp(4:6); hposTemp(7:9)];
+
+figure(63)
+scatter3(hpos{1}(:,1), hpos{1}(:,2), hpos{1}(:,3))
+
+%%
+
+Smat = zeros(9, length(doa{2})*6);
+
+Smat(1:3, 1:6:end) = -doa{2}.';
+Smat(4:6, 2:6:end) = -doa{2}.';
+Smat(7:9, 3:6:end) = -doa{2}.';
+Smat(1:3, 4:6:end) = doa{2}.';
+Smat(4:6, 4:6:end) = -doa{2}.';
+Smat(1:3, 5:6:end) = doa{2}.';
+Smat(7:9, 5:6:end) = -doa{2}.';
+Smat(4:6, 6:6:end) = doa{2}.';
+Smat(7:9, 6:6:end) = -doa{2}.';
+
+D = zeros(1, length(doa{2})*6);
+D(1:6:end) = c.*E.smlTDOA(:,7);
+D(2:6:end) = c.*E.smlTDOA(:,8);
+D(3:6:end) = c.*E.smlTDOA(:,9);
+D(4:6:end) = c.*E.smlTDOA(:,10);
+D(5:6:end) = c.*E.smlTDOA(:,11);
+D(6:6:end) = c.*E.smlTDOA(:,12);
+
+hposTemp = D.'\-Smat.';
+hpos{2} = [0,0,0; hposTemp(1:3); hposTemp(4:6); hposTemp(7:9)];
+
+figure(64)
+for i=1:4
+    plot3(hpos{2}(i,1), hpos{2}(i,2), hpos{2}(i,3), 'o')
+    grid on
+    hold on
+end
+hold off
+legend('1', '2', '3', '4')
+
+%%
+
+hpair{1} = '1-2';
+hpair{2} = '1-3';
+hpair{3} = '1-4';
+hpair{4} = '2-3';
+hpair{5} = '2-4';
+hpair{6} = '3-4';
+
+figure(77)
+for sp = 1:6
+    subplot(6,2,2*sp-1)
+    histogram(E.smlTDOA(:, sp), linspace(-1e-3, 1e-3, 100))
+    hold on
+    histogram(E.smlTDOA_exp(:, sp), linspace(-1e-3, 1e-3, 100))
+    hold off
+    ylabel(['Pair ', hpair{sp}])
+    if sp==1
+        title('Distributions of TDOAs, EE')
+    end
+end
+
+for sp = 1:6
+    subplot(6,2,2*sp)
+    histogram(E.smlTDOA(:, sp+6), linspace(-1e-3, 1e-3, 100))
+    hold on
+    histogram(E.smlTDOA_exp(:, sp+6), linspace(-1e-3, 1e-3, 100))
+    hold off
+    if sp==1
+        title('Distributions of TDOAs, EW')
+    end
+end
+legend('Measured TDOA', 'Expected TDOA (from large-aperture localization)')
+%%
+hpair{1} = '1-2';
+hpair{2} = '1-3';
+hpair{3} = '1-4';
+hpair{4} = '2-3';
+hpair{5} = '2-4';
+hpair{6} = '3-4';
+
+figure(78)
+for sp = 1:6
+    subplot(6,2,2*sp-1)
+    histogram(E.smlTDOA(:, sp) - E.smlTDOA_exp(:, sp), linspace(-1e-3, 1e-3, 100))
+    ylabel(['Pair ', hpair{sp}])
+    if sp==1
+        title('Distributions of Error between expected and measured TDOAs, EE')
+    end
+end
+
+for sp = 1:6
+    subplot(6,2,2*sp)
+    histogram(E.smlTDOA(:, sp+6)-E.smlTDOA_exp(:, sp+6), linspace(-1e-3, 1e-3, 100))
+
+    if sp==1
+        title('Distributions of Error between expected and measured TDOAs, EW')
+    end
+end
+
+
+
