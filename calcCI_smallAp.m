@@ -1,4 +1,4 @@
-function [CIx, CIy, CIz] = calcCI(TDOA, wloc, h, H1, H2, Asml, Alrg, LOC)
+function [CIx, CIy, CIz] = calcCI_smallAp(TDOA, wloc, h, H1, H2, Asml, LOC)
 
 CIx = nan(1, 2);
 CIy = nan(1, 2);
@@ -10,9 +10,7 @@ zv = LOC.wzlim(1):LOC.wzlim(2);
 
 % calculate CIx:
 [mTDOA, mwloc] = makeModel(xv, wloc(2), wloc(3), h, H1, H2, LOC.c);
-Lsml = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
-Llrg = Alrg*exp(-1./(2.*LOC.sig_lrg^2).*sum((mTDOA(:,13:end)-TDOA(13:end)).^2, 2, 'omitnan'));
-Lx = Lsml.*Llrg;
+Lx = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cx = cumsum(Lx)./sum(Lx);
 % Cx = cumsum(Lx);
 % Cx = Cx-min(Cx);
@@ -32,9 +30,7 @@ end
 
 % calculate CIy:
 [mTDOA, mwloc] = makeModel(wloc(1), yv, wloc(3), h, H1, H2, LOC.c);
-Lsml = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
-Llrg = Alrg*exp(-1./(2.*LOC.sig_lrg^2).*sum((mTDOA(:,13:end)-TDOA(13:end)).^2, 2, 'omitnan'));
-Ly = Lsml.*Llrg;
+Ly = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cy = cumsum(Ly)./sum(Ly);
 % Cy = cumsum(Ly);
 % Cy = Cy - min(Cy);
@@ -54,9 +50,7 @@ end
 
 % calculate CIz:
 [mTDOA, mwloc] = makeModel(wloc(1), wloc(2), zv, h, H1, H2, LOC.c);
-Lsml = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
-Llrg = Alrg*exp(-1./(2.*LOC.sig_lrg^2).*sum((mTDOA(:,13:end)-TDOA(13:end)).^2, 2, 'omitnan'));
-Lz = Lsml.*Llrg;
+Lz = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cz = cumsum(Lz)./sum(Lz);
 % Cz = cumsum(Lz);
 % Cz = Cz-min(Cz);

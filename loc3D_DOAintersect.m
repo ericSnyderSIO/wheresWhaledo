@@ -67,7 +67,8 @@ for wn = 1:length(colorNums) % iterate through each whale number
         whale{wn}.werr = werr;
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(I1, :);
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(I2, :);
-
+        whale{wn}.I1 = I1;
+        whale{wn}.I2 = I2;
 
         scatter3(whale{wn}.wloc(:, 1), whale{wn}.wloc(:, 2), whale{wn}.wloc(:, 3), ...
             24, brushing.params.colorMat(wn+2, :), 'filled')
