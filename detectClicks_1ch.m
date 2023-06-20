@@ -26,14 +26,19 @@ detTable.('DAmp') = zeros(10000, 1);
 detTable.('TDet') = zeros(10000, 1);
 
 while t2<=tend
-
-    [x, t] = quickxwavRead(t1, t2, detParam.fs, XH);
-
+    try
+        [x, t] = quickxwavRead(t1, t2, detParam.fs, XH);
+    catch
+        fprintf('\nerror in quickxwavRead, skipping time frame')
+        t1 = t2;
+        t2 = t1 + detParam.twin/spd;
+        continue
+    end
     xf = filtfilt(b, a, x);
     if max(xf)>=detParam.th
-    
+
         [pks, ind] = findpeaks(xf, 'minPeakHeight', detParam.th, 'minPeakDistance', detParam.minPkDist);
-    
+
         tdet = t1 + ind/detParam.fs/spd; % times of detections
 
         if idet+length(pks)-1>length(detTable.('TDet'))
@@ -42,14 +47,14 @@ while t2<=tend
 
             detTable = [detTable; tempTable];
         end
-        
+
         detTable.('DAmp')(idet:idet+length(pks)-1) = pks;
         detTable.('TDet')(idet:idet+length(pks)-1) = tdet;
 
         idet = idet + length(pks);
 
-       
-        
+
+
     end
     t1 = t2;
     t2 = t1 + detParam.twin/spd;

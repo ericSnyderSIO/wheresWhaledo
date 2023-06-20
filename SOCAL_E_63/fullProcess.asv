@@ -1,11 +1,10 @@
 clear global
-close all
 clear all
 tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 % trackNum = 179; % Dolphin
 % trackNum = 30; % large group
 % trackNum = 402;
-trackNum = 216;
+trackNum = 75;
 % trackNum = 600; % unambiguous
 
 
@@ -23,7 +22,7 @@ load(fullfile(dfile.folder, dfile.name))
 trackName = dfolder.name;
 
 %  calculate new start/end times:
-TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .2/24;
+TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .1/24;
 TEND = max([DET{1}.TDet; DET{2}.TDet]) + .1/24;
 
 % TSTART = datenum([18 05 24 18 10 00]);
@@ -151,7 +150,7 @@ load(fullfile(dfile.folder, [trackName, '_noEdits']))
 % load(fullfile(dfile.folder, [trackName, '_ericEdits']))
 
 for nd = 1:2
-        DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
+%         DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
 end
 
 % [DET{1}, DET{2}] = brushDOA(DET{1}, DET{2})
@@ -219,16 +218,16 @@ save(fullfile(dfile.folder, [trackName, '_localized']), 'whale')
 %% brush TDOA
 load(fullfile(dfile.folder, [trackName, '_localized']))
 % load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
-% whale = brushTDOA(whale, H);
+whale = brushTDOA(whale, H);
 
 % run brushTDOA for one whale at a time:
-for wn = 1:numel(whale)
-    wtemp{1} = whale{wn};
-    if ~isempty(wtemp{1})
-        wtemp = brushTDOA(wtemp, H);
-        whale{wn} = wtemp{1};
-    end
-end
+% for wn = 1:numel(whale)
+%     wtemp{1} = whale{wn};
+%     if ~isempty(wtemp{1})
+%         wtemp = brushTDOA(wtemp, H);
+%         whale{wn} = wtemp{1};
+%     end
+% end
 
 
 % whale = localize(whale, hloc, H{1}, H{2}, dp);
@@ -343,7 +342,7 @@ save(fullfile(dfile.folder, [trackName, '_localized_cleaned']), 'whale', 'wfit')
 
 %%
 for wn = 1:numel(whale)
-    if isempty(whale{wn})
+    if isempty(whale)
         continue
     end
 %      Iuse = find(sum(~isnan(whale{wn}.TDOA), 2)>=7 & sum(~isnan(whale{wn}.TDOA), 2)<12 & ~isnan(whale{wn}.wlocSmooth(:,1)));

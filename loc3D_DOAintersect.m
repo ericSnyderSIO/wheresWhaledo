@@ -67,6 +67,7 @@ for wn = 1:length(colorNums) % iterate through each whale number
         z = w(3,:) - abs(h0(3));
         whale{wn}.LatLonDepth = [lat; lon; z];
         whale{wn}.werr = werr;
+
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(t1_used_idx, :); % only simultaneous TDOAs array 1
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(t2_used_idx, :); % only simultaneous TDOAs array 2
         whale{wn}.I1 = I1;

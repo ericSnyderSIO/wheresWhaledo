@@ -10,7 +10,7 @@ for wn = 1:numel(whaleOut)
     whaleOut{wn}.wlocSmooth = nan(size(whaleOut{wn}.wloc));
 
     Iuse = find(~isnan(whaleOut{wn}.wloc(:,1))); % indices of localized detections
-    if isempty(Iuse)
+    if length(Iuse)<3
         continue
     end
     wts = sum(~isnan(whaleOut{wn}.TDOA(Iuse, :)), 2); % define weights as number of TDOAs used to localize
