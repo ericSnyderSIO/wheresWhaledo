@@ -1,33 +1,42 @@
 clear global
-close all
+close all force
 clear all
 tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 % trackNum = 179; % Dolphin
 % trackNum = 30; % large group
-% trackNum = 402;
-trackNum = 216;
+
+% trackNum = 369;
 % trackNum = 600; % unambiguous
 
 
-dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
+trackNum = 666;
 
-if isempty(dfolder)
-    mkdir([tracksFolder, 'track', num2str(trackNum), '_180524_042500'])
-    dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
-end
+TSTART = datenum([18 05 31 06 21 00]);
+TEND = datenum([18 05 31 07 50 00]);
 
-dfile = dir([dfolder.folder, '\', dfolder.name, '\*ericMod.mat'])
+% dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
 
-load(fullfile(dfile.folder, dfile.name))
+% if ~isempty(dfolder)
+%     crash
+% end
+    startTime = datestr(TSTART, '_yymmdd_HHMMSS')
+    mkdir([tracksFolder, 'track', num2str(trackNum), startTime])
+%     dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
+    dfile.folder = [tracksFolder, 'track', num2str(trackNum), startTime];
+    trackName = ['track', num2str(trackNum), startTime];
+% end
+% dfile.folder = fullfile(dfolder.folder, dfolder.name);
+% dfile = dir([dfolder.folder, '\', dfolder.name, '\*ericMod.mat'])
 
-trackName = dfolder.name;
+% load(fullfile(dfile.folder, dfile.name))
+
+% trackName = dfolder.name;
 
 %  calculate new start/end times:
-TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .2/24;
-TEND = max([DET{1}.TDet; DET{2}.TDet]) + .1/24;
+% TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .1/24;
+% TEND = max([DET{1}.TDet; DET{2}.TDet]) + .1/24;
 
-% TSTART = datenum([18 05 24 18 10 00]);
-% TEND = datenum([18 05 24 18 56 00]);
+
 
 %%
 global brushing
@@ -116,27 +125,27 @@ end
 %% Determine threshold of detection
 tstart = TSTART;
 
-for nh = 1:4
-    cont = 'c';
-    while ~strcmp(cont, 'q')
-        [x, t] = quickxwavRead(tstart, tstart + 60/spd, fs(nh), XH{nh});
-        xf = filtfilt(b{nh}, a{nh}, x(:,1));
-        figure(21)
-        plot(t, xf)
-        title(['Instrument ', num2str(nh)])
-
-        cont = input('\nEnter ''q'' to move to next instrument\n''n'' to examine next minute\n''p'' to examine previous minute: ', 's');
-
-        switch cont
-            case 'n'
-                tstart = tstart + 60/spd;
-            case 'p'
-                tstart = tstart - 60/spd;
-            case 'q'
-                continue
-        end
-    end
-end
+% for nh = 1:4
+%     cont = 'c';
+%     while ~strcmp(cont, 'q')
+%         [x, t] = quickxwavRead(tstart, tstart + 60/spd, fs(nh), XH{nh});
+%         xf = filtfilt(b{nh}, a{nh}, x(:,1));
+%         figure(21)
+%         plot(t, xf)
+%         title(['Instrument ', num2str(nh)])
+% 
+%         cont = input('\nEnter ''q'' to move to next instrument\n''n'' to examine next minute\n''p'' to examine previous minute: ', 's');
+% 
+%         switch cont
+%             case 'n'
+%                 tstart = tstart + 60/spd;
+%             case 'p'
+%                 tstart = tstart - 60/spd;
+%             case 'q'
+%                 continue
+%         end
+%     end
+% end
 
 %% run detector on 4ch
 for n = 1:2
@@ -219,7 +228,7 @@ save(fullfile(dfile.folder, [trackName, '_localized']), 'whale')
 %% brush TDOA
 load(fullfile(dfile.folder, [trackName, '_localized']))
 % load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
-% whale = brushTDOA(whale, H);
+whale = brushTDOA(whale, H);
 
 % run brushTDOA for one whale at a time:
 for wn = 1:numel(whale)

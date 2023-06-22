@@ -9,7 +9,7 @@ yv = LOC.wylim(1):LOC.wylim(2);
 zv = LOC.wzlim(1):LOC.wzlim(2);
 
 % calculate CIx:
-[mTDOA, mwloc] = makeModel(xv, wloc(2), wloc(3), h, H1, H2, LOC.c);
+[mTDOA, mwloc] = makeModel(xv, wloc(2), wloc(3), h, H1, H2, LOC.c, 'DOA');
 Lx = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cx = cumsum(Lx)./sum(Lx);
 % Cx = cumsum(Lx);
@@ -29,7 +29,7 @@ else
 end
 
 % calculate CIy:
-[mTDOA, mwloc] = makeModel(wloc(1), yv, wloc(3), h, H1, H2, LOC.c);
+[mTDOA, mwloc] = makeModel(wloc(1), yv, wloc(3), h, H1, H2, LOC.c, 'DOA');
 Ly = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cy = cumsum(Ly)./sum(Ly);
 % Cy = cumsum(Ly);
@@ -49,7 +49,7 @@ else
 end
 
 % calculate CIz:
-[mTDOA, mwloc] = makeModel(wloc(1), wloc(2), zv, h, H1, H2, LOC.c);
+[mTDOA, mwloc] = makeModel(wloc(1), wloc(2), zv, h, H1, H2, LOC.c, 'DOA');
 Lz = Asml*exp(-1./(2.*LOC.sig_sml^2).*sum((mTDOA(:,1:12)-TDOA(1:12)).^2, 2, 'omitnan'));
 Cz = cumsum(Lz)./sum(Lz);
 % Cz = cumsum(Lz);

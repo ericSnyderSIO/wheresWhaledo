@@ -73,6 +73,37 @@ for wn = 1:numel(whaleOut)
         [Nrows, Ntdoa] = size(whaleOut{wn}.TDOA);
         
         % initialize confidence intervals:
+        whaleOut{wn}.CIxSmooth = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIySmooth = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIzSmooth = whaleOut{wn}.CIx;
+
+        TDOA = whaleOut{wn}.TDOA(Iuse, :);
+        TDet = whaleOut{wn}.TDet(Iuse);
+        wloc = whaleOut{wn}.wloc(Iuse, :);
+        wlocSmooth = whaleOut{wn}.wlocSmooth(Iuse, :);
+
+        if Ntdoa==12 % only small apertures were used
+            
+            % calculate for smoothed localizations:
+            [CIxSmooth, CIySmooth, CIzSmooth] = run_calcCI_SmlOnly(TDOA, wloc, hloc, H, LOC);
+            whaleOut{wn}.CIxSmooth(Iuse, :) = CIxSmooth;
+            whaleOut{wn}.CIySmooth(Iuse, :) = CIySmooth;
+            whaleOut{wn}.CIzSmooth(Iuse, :) = CIzSmooth;
+
+        else % large and small ap used
+            TDOA = whaleOut{wn}.TDOA(Iuse, :);
+            % calculate for smoothed localizations:
+            wlocSmooth = whaleOut{wn}.wlocSmooth(Iuse, :);
+            [CIxSmooth, CIySmooth, CIzSmooth] = run_calcCI_lrgAndSml(TDet, TDOA, wlocSmooth, hloc, H, driftPoly, LOC);
+            whaleOut{wn}.CIxSmooth(Iuse, :) = CIxSmooth;
+            whaleOut{wn}.CIySmooth(Iuse, :) = CIySmooth;
+            whaleOut{wn}.CIzSmooth(Iuse, :) = CIzSmooth;
+        end
+
+    elseif locFlag==1 && smoothFlag==0 % run only on unsmoothed locs
+        [Nrows, Ntdoa] = size(whaleOut{wn}.TDOA);
+        
+        % initialize confidence intervals:
         whaleOut{wn}.CIx = nan(Nrows, 2);
         whaleOut{wn}.CIxSmooth = whaleOut{wn}.CIx;
         whaleOut{wn}.CIy = whaleOut{wn}.CIx;
@@ -116,11 +147,53 @@ for wn = 1:numel(whaleOut)
             whaleOut{wn}.CIySmooth(Iuse, :) = CIySmooth;
             whaleOut{wn}.CIzSmooth(Iuse, :) = CIzSmooth;
         end
-
-    elseif locFlag==1 && smoothFlag==0 % run only on unsmoothed locs
-
     elseif locFlag==0 && smoothFlag==1 % run only on smoothed locs
+        [Nrows, Ntdoa] = size(whaleOut{wn}.TDOA);
+        
+        % initialize confidence intervals:
+        whaleOut{wn}.CIx = nan(Nrows, 2);
+        whaleOut{wn}.CIxSmooth = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIy = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIySmooth = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIz = whaleOut{wn}.CIx;
+        whaleOut{wn}.CIzSmooth = whaleOut{wn}.CIx;
 
+        TDOA = whaleOut{wn}.TDOA(Iuse, :);
+        TDet = whaleOut{wn}.TDet(Iuse);
+        wloc = whaleOut{wn}.wloc(Iuse, :);
+        wlocSmooth = whaleOut{wn}.wlocSmooth(Iuse, :);
+
+        if Ntdoa==12 % only small apertures were used
+            
+            % calculate for non-smoothed localizations:
+            [CIx, CIy, CIz] = run_calcCI_SmlOnly(TDOA, wloc, hloc, H, LOC);
+            whaleOut{wn}.CIx(Iuse, :) = CIx;
+            whaleOut{wn}.CIy(Iuse, :) = CIy;
+            whaleOut{wn}.CIz(Iuse, :) = CIz;
+
+            % calculate for smoothed localizations:
+            [CIxSmooth, CIySmooth, CIzSmooth] = run_calcCI_SmlOnly(TDOA, wloc, hloc, H, LOC);
+            whaleOut{wn}.CIxSmooth(Iuse, :) = CIxSmooth;
+            whaleOut{wn}.CIySmooth(Iuse, :) = CIySmooth;
+            whaleOut{wn}.CIzSmooth(Iuse, :) = CIzSmooth;
+
+        else % large and small ap used
+            TDOA = whaleOut{wn}.TDOA(Iuse, :);
+            
+            % calculate for non-smoothed localizations:
+            wloc = whaleOut{wn}.wloc(Iuse, :);
+            [CIx, CIy, CIz] = run_calcCI_lrgAndSml(TDet, TDOA, wloc, hloc, H, driftPoly, LOC);
+            whaleOut{wn}.CIx(Iuse, :) = CIx;
+            whaleOut{wn}.CIy(Iuse, :) = CIy;
+            whaleOut{wn}.CIz(Iuse, :) = CIz;
+
+            % calculate for smoothed localizations:
+            wlocSmooth = whaleOut{wn}.wlocSmooth(Iuse, :);
+            [CIxSmooth, CIySmooth, CIzSmooth] = run_calcCI_lrgAndSml(TDet, TDOA, wlocSmooth, hloc, H, driftPoly, LOC);
+            whaleOut{wn}.CIxSmooth(Iuse, :) = CIxSmooth;
+            whaleOut{wn}.CIySmooth(Iuse, :) = CIySmooth;
+            whaleOut{wn}.CIzSmooth(Iuse, :) = CIzSmooth;
+        end
     end
 
 end

@@ -21,6 +21,7 @@ LOC.niter = 3; % number of iterative model generations used to converge on whale
 
 % New values
 LOC.sig_sml = .265e-3;
+%LOC.sig_sml = .201e-3;
 LOC.sig_lrg = 10.6e-3;
 
 LOC.driftSign = -1; % =1 if drift is added to TDOA, =-1 if drift is subtracted from TDOA

@@ -27,10 +27,17 @@ end
 detTable = table;
 
 idet = 1; % counter for number of detections
-
+ierr = 0; % error counter
 while t2<=tend
-    [x, t] = readxwavSegment(t1, t2, XH);
-
+    try
+        [x, t] = readxwavSegment(t1, t2, XH);
+    catch
+        ierr = ierr+1;
+        fprintf('\nerror in readxwavSegment, skipping segment (error counter=%d)\n', ierr)
+        t1 = t2;
+        t2 = t1 + detParam.twin/spd;
+        continue
+    end
     xf = filtfilt(b, a, x);
     if max(xf)>=detParam.th
         [pks, ind] = findpeaks(xf(:,1), 'minPeakHeight', detParam.th, 'minPeakDistance', detParam.minPkDist);

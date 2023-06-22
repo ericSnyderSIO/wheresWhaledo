@@ -1,21 +1,21 @@
 % inst 1:
-% filepathname{1} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EE_C4\Loc\Deploy\SOCAL_E_63_EE_ttgps.txt';
-filepathname{1} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EE_C4\Loc\Recover\SOCAL_E_63_EE_Rec_ttgps.txt';
+filepathname{1} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EE_C4\Loc\Deploy\SOCAL_E_63_EE_ttgps.txt';
+% filepathname{1} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EE_C4\Loc\Recover\SOCAL_E_63_EE_Rec_ttgps.txt';
 ymd{1} = [2018, 03, 16];
 
 % inst 2:
-% filepathname{2} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EW_C4\Loc\Deploy\SOCAL_E_63_EW_ttgps_combined.txt';
-filepathname{2} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EW_C4\Loc\Recover\SOCAL_E_63_EW_C4_Rec_ttgps.txt';
+filepathname{2} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EW_C4\Loc\Deploy\SOCAL_E_63_EW_ttgps_combined.txt';
+% filepathname{2} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EW_C4\Loc\Recover\SOCAL_E_63_EW_C4_Rec_ttgps.txt';
 ymd{2} = [2018, 03, 15];
 
 % inst 3:
-% filepathname{3} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EN\Loc\Deploy\SOCAL_E_63_EN_ttgps.txt';
-filepathname{3} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EN\Loc\Recover\SOCAL_E_63_EN_Rec_ttgps_combined.txt';
+filepathname{3} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EN\Loc\Deploy\SOCAL_E_63_EN_ttgps.txt';
+% filepathname{3} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_EN\Loc\Recover\SOCAL_E_63_EN_Rec_ttgps_combined.txt';
 ymd{3} = [2018, 03, 16];
 
 % inst 4:
-% filepathname{4} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_ES\Loc\Deploy\SOCAL_E_63_ES_ttgps.txt';
-filepathname{4} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_ES\Loc\Recover\SOCAL_E_63_ES_Rec_ttgps.txt';
+filepathname{4} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_ES\Loc\Deploy\SOCAL_E_63_ES_ttgps.txt';
+% filepathname{4} = 'D:\SOCAL_E_63\HARP_Deployment_Metadata\SOCAL_E_63_ES\Loc\Recover\SOCAL_E_63_ES_Rec_ttgps.txt';
 ymd{4} = [2018, 03, 16];
 
 load('D:\Writing\wheresWhaledo\figures\tracks\hydLoc.mat') % file with original hydrophone location estimates
