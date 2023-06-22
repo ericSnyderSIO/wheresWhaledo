@@ -5,36 +5,36 @@ tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 % trackNum = 179; % Dolphin
 % trackNum = 30; % large group
 
-% trackNum = 369;
+trackNum = 369;
 % trackNum = 600; % unambiguous
 
 
-trackNum = 666;
+% trackNum = 666;
 
-TSTART = datenum([18 05 31 06 21 00]);
-TEND = datenum([18 05 31 07 50 00]);
+% TSTART = datenum([18 05 31 06 21 00]);
+% TEND = datenum([18 05 31 07 50 00]);
 
-% dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
+dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
 
 % if ~isempty(dfolder)
 %     crash
 % end
-    startTime = datestr(TSTART, '_yymmdd_HHMMSS')
-    mkdir([tracksFolder, 'track', num2str(trackNum), startTime])
+%     startTime = datestr(TSTART, '_yymmdd_HHMMSS')
+%     mkdir([tracksFolder, 'track', num2str(trackNum), startTime])
 %     dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
-    dfile.folder = [tracksFolder, 'track', num2str(trackNum), startTime];
-    trackName = ['track', num2str(trackNum), startTime];
+%     dfile.folder = [tracksFolder, 'track', num2str(trackNum), startTime];
+%     trackName = ['track', num2str(trackNum), startTime];
 % end
-% dfile.folder = fullfile(dfolder.folder, dfolder.name);
-% dfile = dir([dfolder.folder, '\', dfolder.name, '\*ericMod.mat'])
+dfile.folder = fullfile(dfolder.folder, dfolder.name);
+dfile = dir([dfolder.folder, '\', dfolder.name, '\*ericMod.mat'])
 
-% load(fullfile(dfile.folder, dfile.name))
+load(fullfile(dfile.folder, dfile.name))
 
-% trackName = dfolder.name;
+trackName = dfolder.name;
 
 %  calculate new start/end times:
-% TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .1/24;
-% TEND = max([DET{1}.TDet; DET{2}.TDet]) + .1/24;
+TSTART = min([DET{1}.TDet; DET{2}.TDet]) - .1/24;
+TEND = max([DET{1}.TDet; DET{2}.TDet]) + .1/24;
 
 
 
@@ -364,7 +364,7 @@ for wn = 1:numel(whale)
 if isempty(Iuse)
     continue
 end
-    figure(110+wn)
+    figure(120+wn)
     subplot(3,1,1)
 %     plot(whale{wn}.TDet(Iuse), whale{wn}.CIx(Iuse, :), 'k.')
 %     hold on

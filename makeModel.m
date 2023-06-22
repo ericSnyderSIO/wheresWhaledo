@@ -26,7 +26,7 @@ TDOA(:, 7:12) = (s{2}*H2.')./c;
 if nargin==7 % need to calculate large ap. TDOAs
 
     % large aperture TDOAs
-    numh = size(h, 2); % number of hydrophones
+    numh = size(h, 1); % number of hydrophones
     switch numh
         case 2 % only two arrays, calculate one large-aperture TDOA
             TDOA(:, 13) = (r1-r2)./c;

@@ -24,7 +24,7 @@ for wn = 1:numel(whaleOut)
     for ndim = 1:3 % iterate through each dimension (x, y, z)
         pos = whaleOut{wn}.wloc(Iuse, ndim); % whale position in dimension ndim
 
-        splineFit = fit(t', pos, 'smoothingspline', 'SmoothingParam', smoothingParam, 'Weights', wts); % fit spline
+        splineFit = fit(t, pos, 'smoothingspline', 'SmoothingParam', smoothingParam, 'Weights', wts); % fit spline
 
         posSpline = feval(splineFit, t); % evaluate spline at times t
 
