@@ -73,6 +73,7 @@ for wn = 1:numel(whaleOut)
         [Nrows, Ntdoa] = size(whaleOut{wn}.TDOA);
         
         % initialize confidence intervals:
+        whaleOut{wn}.CIx = nan(Nrows, 2);
         whaleOut{wn}.CIxSmooth = whaleOut{wn}.CIx;
         whaleOut{wn}.CIySmooth = whaleOut{wn}.CIx;
         whaleOut{wn}.CIzSmooth = whaleOut{wn}.CIx;
@@ -83,6 +84,12 @@ for wn = 1:numel(whaleOut)
         wlocSmooth = whaleOut{wn}.wlocSmooth(Iuse, :);
 
         if Ntdoa==12 % only small apertures were used
+            
+            % calculate for non-smoothed localizations:
+            [CIx, CIy, CIz] = run_calcCI_SmlOnly(TDOA, wloc, hloc, H, LOC);
+            whaleOut{wn}.CIx(Iuse, :) = CIx;
+            whaleOut{wn}.CIy(Iuse, :) = CIy;
+            whaleOut{wn}.CIz(Iuse, :) = CIz;
             
             % calculate for smoothed localizations:
             [CIxSmooth, CIySmooth, CIzSmooth] = run_calcCI_SmlOnly(TDOA, wloc, hloc, H, LOC);
