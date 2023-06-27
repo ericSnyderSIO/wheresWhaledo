@@ -5,7 +5,7 @@ tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 % trackNum = 179; % Dolphin
 % trackNum = 30; % large group
 
-trackNum = 369;
+trackNum = 172;
 % trackNum = 600; % unambiguous
 
 

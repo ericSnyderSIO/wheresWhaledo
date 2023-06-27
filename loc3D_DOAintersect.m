@@ -27,7 +27,9 @@ scatter3(h1(1), h1(2), h1(3), 24, 'k^', 'filled')
 hold on
 scatter3(h2(1), h2(2), h2(3), 24, 'k^', 'filled')
 
+
 for wn = 1:length(colorNums) % iterate through each whale number
+    whale{wn} = table;
     I1 = find(DET{1}.color==colorNums(wn)); % indices on array 1 labeled as whale wn
     I2 = find(DET{2}.color==colorNums(wn)); % indices on array 2 labeled as whale wn
 
@@ -57,21 +59,26 @@ for wn = 1:length(colorNums) % iterate through each whale number
                 t1_used_idx(i) = i1; % save for TDOA indexing later
                 t2_used(i) = t2(i2);
                 t2_used_idx(i) = i2; % save for TDOA indexing later
+
             end
         end
+        
+        if i<1
+            continue
+        end
         whale{wn}.wloc = w;
-        whale{wn}.TDet = t1_used;
-        whale{wn}.t1 = t1_used;
-        whale{wn}.t2 = t2_used;
+        whale{wn}.TDet = t1_used.';
+        whale{wn}.t1 = t1_used.';
+        whale{wn}.t2 = t2_used.';
         [lat, lon] = xy2latlon_wgs84(w(:, 1), w(:, 2), h0(1), h0(2));
-        z = w(3,:) - abs(h0(3));
-        whale{wn}.LatLonDepth = [lat; lon; z];
-        whale{wn}.werr = werr;
+        z = w(:, 3) - abs(h0(3));
+        whale{wn}.LatLonDepth = [lat, lon, z];
+        whale{wn}.werr = werr.';
 
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(t1_used_idx, :); % only simultaneous TDOAs array 1
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(t2_used_idx, :); % only simultaneous TDOAs array 2
-        whale{wn}.I1 = I1;
-        whale{wn}.I2 = I2;
+        whale{wn}.I1 = t1_used_idx.';
+        whale{wn}.I2 = t2_used_idx.';
         
         scatter3(whale{wn}.wloc(:, 1), whale{wn}.wloc(:, 2), whale{wn}.wloc(:, 3), ...
             24, brushing.params.colorMat(wn+2, :), 'filled')
