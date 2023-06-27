@@ -59,7 +59,8 @@ for wn = 1:length(colorNums) % iterate through each whale number
                 t1_used_idx(i) = i1; % save for TDOA indexing later
                 t2_used(i) = t2(i2);
                 t2_used_idx(i) = i2; % save for TDOA indexing later
-
+                I1_used(i) = I1(i1);
+                I2_used(i) = I2(i2);
             end
         end
         
@@ -77,8 +78,8 @@ for wn = 1:length(colorNums) % iterate through each whale number
 
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(t1_used_idx, :); % only simultaneous TDOAs array 1
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(t2_used_idx, :); % only simultaneous TDOAs array 2
-        whale{wn}.I1 = t1_used_idx.';
-        whale{wn}.I2 = t2_used_idx.';
+        whale{wn}.I1 = I1_used.';
+        whale{wn}.I2 = I2_used.';
         
         scatter3(whale{wn}.wloc(:, 1), whale{wn}.wloc(:, 2), whale{wn}.wloc(:, 3), ...
             24, brushing.params.colorMat(wn+2, :), 'filled')
