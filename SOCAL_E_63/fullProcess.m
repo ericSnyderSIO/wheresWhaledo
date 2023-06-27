@@ -11,8 +11,8 @@ tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 
 trackNum = 666;
 
-TSTART = datenum([18 05 31 06 21 00]);
-TEND = datenum([18 05 31 07 50 00]);
+TSTART = datenum([18 06 02 05 10 00]);
+TEND = datenum([18 06 02 07 30 00]);
 
 % dfolder = dir([tracksFolder, '*track', num2str(trackNum), '_*'])
 
@@ -156,12 +156,12 @@ save(fullfile(dfile.folder, [trackName, '_noEdits']), 'DET')
 
 %% rerun brushDOA
 % load(['D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track600_180611_110414\SOCAL_E_63_', trackName, '_ericMod_detections.mat'])
-load(fullfile(dfile.folder, [trackName, '_noEdits']))
-% load(fullfile(dfile.folder, [trackName, '_ericEdits']))
+% load(fullfile(dfile.folder, [trackName, '_noEdits']))
+load(fullfile(dfile.folder, [trackName, '_ericEdits']))
 
-for nd = 1:2
-        DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
-end
+% for nd = 1:2
+%         DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
+% end
 
 % [DET{1}, DET{2}] = brushDOA(DET{1}, DET{2})
 
