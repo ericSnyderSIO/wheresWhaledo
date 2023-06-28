@@ -41,6 +41,16 @@ for wn = 1:length(colorNums) % iterate through each whale number
         doa1 = DET{1}.DOA(I1, :); %% times of DOA on array 1
         doa2 = DET{2}.DOA(I2, :); %% times of DOA on array 2
         
+        % initialize variables as nan:
+        w = nan(length(t1), 3);
+        werr = nan(length(t1), 1);
+        t1_used = werr;
+        t1_used_idx = werr; 
+        t2_used = werr;
+        t2_used_idx = werr; 
+        I1_used = werr;
+        I2_used = werr;
+
         i = 0;
         for i1 = 1:length(t1) % iterate through all detections on array 1
             [tdiff, i2] = min(abs(t2 - t1(i1))); % find nearest detection on array 2
@@ -67,20 +77,33 @@ for wn = 1:length(colorNums) % iterate through each whale number
         if i<1
             continue
         end
+
+        % remove excess nans
+        Irem = find(isnan(w(:,1)));
+        w(Irem, :) = [];
+        werr(Irem) = [];
+        t1_used(Irem) = [];
+        t1_used_idx(Irem) = []; 
+        t2_used(Irem) = [];
+        t2_used_idx(Irem) = []; 
+        I1_used(Irem) = [];
+        I2_used(Irem) = [];
+
         whale{wn}.wloc = w;
-        whale{wn}.TDet = t1_used.';
-        whale{wn}.t1 = t1_used.';
-        whale{wn}.t2 = t2_used.';
+        whale{wn}.TDet = t1_used;
+        whale{wn}.t1 = t1_used;
+        whale{wn}.t2 = t2_used;
         [lat, lon] = xy2latlon_wgs84(w(:, 1), w(:, 2), h0(1), h0(2));
         z = w(:, 3) - abs(h0(3));
         whale{wn}.LatLonDepth = [lat, lon, z];
-        whale{wn}.werr = werr.';
-
+        whale{wn}.werr = werr;
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(t1_used_idx, :); % only simultaneous TDOAs array 1
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(t2_used_idx, :); % only simultaneous TDOAs array 2
-        whale{wn}.I1 = I1_used.';
-        whale{wn}.I2 = I2_used.';
+        whale{wn}.I1 = I1_used;
+        whale{wn}.I2 = I2_used;
         
+        
+
         scatter3(whale{wn}.wloc(:, 1), whale{wn}.wloc(:, 2), whale{wn}.wloc(:, 3), ...
             24, brushing.params.colorMat(wn+2, :), 'filled')
 
