@@ -34,9 +34,6 @@ for wn = 1:numel(whaleOut)
 end
 
 if nargout==2
-    if exist('wfit')
-        varargout{1} = wfit;
-    else
-        varargout{1} = 'ERROR: no fit generated'
-    end
+    if exi
+    varargout{1} = wfit;
 end

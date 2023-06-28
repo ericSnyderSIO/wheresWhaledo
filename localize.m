@@ -51,7 +51,7 @@ for wn = 1:numel(whaleOut)
         
         % want either both four-channels or one four-channel and one or
         % more large ap TDOAs:
-        detUse = find(sum(~isnan(whaleOut{wn}.TDOA),2)>=7);
+        detUse = find(sum(~isnan(whaleOut{wn}.TDOA),2)>=LOC.minNumTDOA);
 
         for ndet = 1:length(detUse)
             detInd = detUse(ndet); % index of detection currently being used
