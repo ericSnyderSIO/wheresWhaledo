@@ -50,6 +50,7 @@ for wn = 1:length(colorNums) % iterate through each whale number
         t2_used_idx = werr; 
         I1_used = werr;
         I2_used = werr;
+        damp = nan(length(t1), 2);
 
         i = 0;
         for i1 = 1:length(t1) % iterate through all detections on array 1
@@ -71,6 +72,7 @@ for wn = 1:length(colorNums) % iterate through each whale number
                 t2_used_idx(i) = i2; % save for TDOA indexing later
                 I1_used(i) = I1(i1);
                 I2_used(i) = I2(i2);
+                
             end
         end
         
@@ -99,6 +101,8 @@ for wn = 1:length(colorNums) % iterate through each whale number
         whale{wn}.werr = werr;
         whale{wn}.TDOA(:, 1:6) = DET{1}.TDOA(t1_used_idx, :); % only simultaneous TDOAs array 1
         whale{wn}.TDOA(:, 7:12) = DET{2}.TDOA(t2_used_idx, :); % only simultaneous TDOAs array 2
+        whale{wn}.DAmp(:, 1) = DET{1}.DAmp(t1_used_idx); % only simultaneous TDOAs array 1
+        whale{wn}.DAmp(:, 2) = DET{2}.DAmp(t2_used_idx, :); % only simultaneous TDOAs array 2
         whale{wn}.I1 = I1_used;
         whale{wn}.I2 = I2_used;
         
