@@ -20,7 +20,8 @@ for wn = 1:numel(whaleOut)
 %         wts = wts./max(wts);
 %     end
     t = (whaleOut{wn}.TDet(Iuse) - whaleOut{wn}.TDet(Iuse(1))).*spd; % time in seconds
-
+    wfit{wn}.t = t;
+    wfit{wn}.t1 = whaleOut{wn}.TDet(Iuse(1));
     for ndim = 1:3 % iterate through each dimension (x, y, z)
         pos = whaleOut{wn}.wloc(Iuse, ndim); % whale position in dimension ndim
 
@@ -28,7 +29,7 @@ for wn = 1:numel(whaleOut)
 
         posSpline = feval(splineFit, t); % evaluate spline at times t
 
-        wfit{wn} = splineFit;
+        wfit{wn}.dim{ndim} = splineFit;
         whaleOut{wn}.wlocSmooth(Iuse, ndim) = posSpline;
     end
 end

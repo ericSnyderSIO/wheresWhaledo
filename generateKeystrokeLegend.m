@@ -30,8 +30,10 @@ end
 for i = 1:length(functs)
     text(xdata(2), ydata(i), functs{i}, 'HorizontalAlignment', 'center', 'FontSize', 11)
 end
-fig.Children.XTick = [];
-fig.Children.YTick = [];
+
+ax = gca;
+ax.XTick = [];
+ax.YTick = [];
 
 xlim([0, 8]);
 ylim([1, length(horzLines) + 1])

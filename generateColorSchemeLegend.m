@@ -13,8 +13,9 @@ colormap(fig, brushing.params.colorMat(2:end-1,:))
 
 colIm = imagesc(M);
 
-fig.Children.XTick = [];
-fig.Children.YTick = [];
+ax = gca;
+ax.XTick = [];
+ax.YTick = [];
 
 fontSize = 13;
 
