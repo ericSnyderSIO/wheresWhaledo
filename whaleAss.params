@@ -3,7 +3,7 @@
 global WAparam
 
 WAparam.fsct = 20e3; % sampling rate used for click train correlation (Hz)
-WAparam.twin = 30; % window size used in click train correlation (seconds)
+WAparam.twin = 60; % window size used in click train correlation (seconds)
 WAparam.overlap = .5; % proportion that each window overlaps with previous iteration's window (window start is tstart = tstart + overlap*twin)
 WAparam.Nhann = 30e-3*WAparam.fsct; % number of elements in hanning window used in place of each detection
 WAparam.Wk = hann(WAparam.Nhann); % window used in place of each detection in a click train

@@ -1,4 +1,4 @@
-function whale = loc3D_DOAintersect_includeCIexperiment(DET, hydLoc, H1, H2, paramFile)
+function whale = loc3D_DOAintersect_includeCI(DET, hydLoc, H1, H2, paramFile)
 % whale = loc3D_DOAintersect(DET, hydLoc, H1, H2, paramFile)
 % produces a 3-D track estimate from the period of time with
 % overlapping detections on both four-channel arrays.

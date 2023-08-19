@@ -11,20 +11,18 @@ fprintf(fid, 'global brushing %% initialize global variable\n\n');
 % Note: I tried to make it somewhat colorbind friendly, but these might need to be
 % tweaked for different users
 % Colorscheme selected from https://colorbrewer2.org/#type=qualitative&scheme=Paired&n=8
-colorMat = [ 153, 153, 153;     % acoustic data (grey)
-    0, 0, 0;            % Unlabeled detections (black)
-    251, 154, 153;      % Whale 1 (pink)
-    193, 223, 138;      % Whale 2 (light green)
-    166, 206, 227;      % Whale 3 (light blue)
-    253, 191, 111;      % Whale 4 (orange cream)
-    31, 120, 180;       % Whale 5 (blue)
-    106, 61, 154;       % Whale 6 (purple)
-    56, 185, 7;         % Whale 7 (dark green)
-    227, 26, 28;        % Whale 8 (red)
-    202, 178, 214];     % Buzzes (lavender)
-colorMat = colorMat./255; % convert from RGB to Matlab color scale
+colorMat(1, :) = [0.600000, 0.600000, 0.600000]; % acoustic data 
+colorMat(2, :) = [0.000000, 0.000000, 0.000000]; % Unlabeled detections 
+colorMat(3, :) = [0.934314, 0.103922, 0.106711]; % Whale 1 
+colorMat(4, :) = [0.250980, 0.457843, 0.750196]; % Whale 2 
+colorMat(5, :) = [0.912157, 0.649020, 0.135294]; % Whale 3 
+colorMat(6, :) = [0.415686, 0.239216, 0.803922]; % Whale 4 
+colorMat(7, :) = [0.119608, 0.625490, 0.027451]; % Whale 5 
+colorMat(8, :) = [0.334314, 0.001922, 0.136711]; % Whale 6 
+colorMat(9, :) = [0.251000, 0.231400, 0.098000]; % Whale 7 
+colorMat(10, :) = [0.719608, 0.325490, 0.007451]; % Whale 8 
+colorMat(11, :) = [0.890196, 0.101961, 0.109804]; % Buzzes 
 brushing.params.colorMat = colorMat;
-
 fprintf(fid, '%% Color scheme:\n');
 fprintf(fid, 'brushing.params.colorMat(1, :) = [%f, %f, %f]; %% acoustic data \n', colorMat(1, :));
 fprintf(fid, 'brushing.params.colorMat(2, :) = [%f, %f, %f]; %% Unlabeled detections \n', colorMat(2, :));
