@@ -1,4 +1,4 @@
-function [CIx, CIy, CIz] = calcCI_smallAp(TDOA, wloc, h, H1, H2, Asml, LOC)
+function [CIx, CIy, CIz] = calcCI_smallAp(w1, w2, hloc, LOC)
 
 CIx = nan(1, 2);
 CIy = nan(1, 2);

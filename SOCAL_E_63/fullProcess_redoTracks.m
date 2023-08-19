@@ -2,10 +2,11 @@ clear global
 close all force
 clear all
 tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
-% trackNum = 179; % Dolphin
-% trackNum = 30; % large group
 
-trackNum = 172;
+% trackNum = 30; % former large group
+% trackNum = 172;
+trackNum = 179; % Dolphin
+% trackNum = 216; large group
 % trackNum = 600; % unambiguous
 
 
@@ -156,8 +157,8 @@ save(fullfile(dfile.folder, [trackName, '_noEdits']), 'DET')
 
 %% rerun brushDOA
 % load(['D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track600_180611_110414\SOCAL_E_63_', trackName, '_ericMod_detections.mat'])
-load(fullfile(dfile.folder, [trackName, '_noEdits']))
-% load(fullfile(dfile.folder, [trackName, '_ericEdits']))
+% load(fullfile(dfile.folder, [trackName, '_noEdits']))
+load(fullfile(dfile.folder, [trackName, '_ericEdits']))
 
 for nd = 1:2
         DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
@@ -223,12 +224,13 @@ save(fullfile(dfile.folder, [trackName, '_TDOA']), 'whale')
 
 %% Localize
 load(fullfile(dfile.folder, [trackName, '_TDOA']))
-whale = localize(whale, hloc, H{1}, H{2}, dp);
+% load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
+whale = localize(whale, hloc, H, dp, 'D:\MATLAB_addons\gitHub\wheresWhaledo\localize_interpOff.params');
 save(fullfile(dfile.folder, [trackName, '_localized']), 'whale')
 %% brush TDOA
 load(fullfile(dfile.folder, [trackName, '_localized']))
 % load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
-whale = brushTDOA(whale, H);
+% whale = brushTDOA(whale, H);
 
 % run brushTDOA for one whale at a time:
 for wn = 1:numel(whale)
@@ -240,7 +242,7 @@ for wn = 1:numel(whale)
 end
 
 
-% whale = localize(whale, hloc, H{1}, H{2}, dp);
+whale = localize(whale, hloc, H, dp, 'D:\MATLAB_addons\gitHub\wheresWhaledo\localize.params');
 save(fullfile(dfile.folder, [trackName, '_localized_cleaned']), 'whale')
 %% smooth
 load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
@@ -252,7 +254,7 @@ for wn = 1:numel(whale)
 end
 
 
-[whale, wfit] = weightedSplineFit(whale, 1e-8);
+[whale, wfit] = weightedSplineFit(whale, 2e-8);
 
 figure(99)
 for sp = 1:3
@@ -309,45 +311,50 @@ pbaspect([1,1,1])
 
 %% Recalculate CI based on wlocSmooth
 load(fullfile(dfile.folder, [trackName, '_localized_cleaned']))
-Nlrg = 6; % number of large ap TDOAs
-global LOC
-loadParams('localize.params')
-sig2sml = LOC.sig_sml.^2;
-sig2lrg = LOC.sig_lrg.^2;
-for wn = 1:numel(whale)
-    if isempty(whale{wn})
-        continue
-    end
-    Iuse = find(~isnan(whale{wn}.wlocSmooth(:,1)));
-    whale{wn}.CIxSmooth = nan(size(whale{wn}.CIx));
-    whale{wn}.CIySmooth = nan(size(whale{wn}.CIy));
-    whale{wn}.CIzSmooth = nan(size(whale{wn}.CIz));
-    whale{wn}.wlocSmooth_Alt = nan(size(whale{wn}.wlocSmooth));
-    for i = 1:length(Iuse)
-        TDOA = whale{wn}.TDOA(Iuse(i), :);
-        wloc = whale{wn}.wlocSmooth(Iuse(i), :);
-
-        Isml = find(~isnan(TDOA(1:12))); % indices of small ap used
-        Ilrg = find(~isnan(TDOA(13:end)))+12; % indices of large ap used
-
-        Asml = (2*pi*sig2sml)^(-length(Isml)/2); % coefficient of small ap
-        Alrg = (2*pi*sig2lrg)^(-length(Ilrg)/2); % coefficient of large ap
-
-        TDOA = whale{wn}.TDOA(Iuse(i), :);
-        drift = zeros(1, Nlrg);
-        for ntdoa = 1:Nlrg
-            drift(ntdoa) = polyval(dp{ntdoa}, whale{wn}.TDet(Iuse(i)));
-        end
-        TDOA(13:end) = TDOA(13:end) + LOC.driftSign.*drift;
-
-        [CIx, CIy, CIz] = calcCI(TDOA, wloc, hloc, H{1}, H{2}, Asml, Alrg, LOC);
-        whale{wn}.CIxSmooth(Iuse(i), :) = CIx;
-        whale{wn}.CIySmooth(Iuse(i), :) = CIy;
-        whale{wn}.CIzSmooth(Iuse(i), :) = CIz;
-    
-    end
-end
-
+% Nlrg = 6; % number of large ap TDOAs
+% global LOC
+% loadParams('localize.params')
+% sig2sml = LOC.sig_sml.^2;
+% sig2lrg = LOC.sig_lrg.^2;
+% for wn = 1:numel(whale)
+%     if isempty(whale{wn})
+%         continue
+%     end
+%     Iuse = find(~isnan(whale{wn}.wlocSmooth(:,1)));
+%     whale{wn}.CIxSmooth = nan(size(whale{wn}.CIx));
+%     whale{wn}.CIySmooth = nan(size(whale{wn}.CIy));
+%     whale{wn}.CIzSmooth = nan(size(whale{wn}.CIz));
+%     whale{wn}.wlocSmooth_Alt = nan(size(whale{wn}.wlocSmooth));
+%     for i = 1:length(Iuse)
+%         TDOA = whale{wn}.TDOA(Iuse(i), :);
+%         wloc = whale{wn}.wlocSmooth(Iuse(i), :);
+% 
+%         Isml = find(~isnan(TDOA(1:12))); % indices of small ap used
+%         Ilrg = find(~isnan(TDOA(13:end)))+12; % indices of large ap used
+% 
+%         Asml = (2*pi*sig2sml)^(-length(Isml)/2); % coefficient of small ap
+%         Alrg = (2*pi*sig2lrg)^(-length(Ilrg)/2); % coefficient of large ap
+% 
+%         TDOA = whale{wn}.TDOA(Iuse(i), :);
+%         drift = zeros(1, Nlrg);
+%         for ntdoa = 1:Nlrg
+%             drift(ntdoa) = polyval(dp{ntdoa}, whale{wn}.TDet(Iuse(i)));
+%         end
+%         TDOA(13:end) = TDOA(13:end) + LOC.driftSign.*drift;
+% 
+%         [CIx, CIy, CIz] = calcCI(TDOA, wloc, hloc, H{1}, H{2}, Asml, Alrg, LOC);
+%         whale{wn}.CIxSmooth(Iuse(i), :) = CIx;
+%         whale{wn}.CIySmooth(Iuse(i), :) = CIy;
+%         whale{wn}.CIzSmooth(Iuse(i), :) = CIz;
+%     
+%     end
+% end
+% 
+% for wn = 1:numel(whale)
+%     whale{wn}.CIxSmooth = smoothdata(whale{wn}.CIx);
+%     whale{wn}.CIySmooth = smoothdata(whale{wn}.CIy);
+%     whale{wn}.CIzSmooth = smoothdata(whale{wn}.CIz);
+% end
 save(fullfile(dfile.folder, [trackName, '_localized_cleaned']), 'whale', 'wfit')
 
 %%

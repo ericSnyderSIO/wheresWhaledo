@@ -14,7 +14,9 @@ function whaleOut = localize(whaleIn, hloc, H, driftPoly, varargin)
 global LOC
 
 if nargin==5
-    loadParams(varargin{1})
+    if isstring(varargin{1})
+        loadParams(varargin{1})
+    end
 elseif nargin==4
     loadParams('localize.params')
 else
@@ -39,23 +41,27 @@ for wn = 1:numel(whaleOut)
     if LOC.interp
         for ntdoa = 1:18
             Iuse = find(~isnan(whaleOut{wn}.TDOA(:, ntdoa)));
-            tdoa = nan(size(whaleOut{wn}.TDOA(:, ntdoa)));
-
             if isempty(Iuse)
                 continue
             end
             
-            Ibreak = find(diff(whaleOut{wn}.TDet(Iuse))>(LOC.maxGap./spd));
+            Ibreak = find(diff(whaleOut{wn}.TDet(Iuse, ntdoa))>(LOC.maxGap./spd));
 
             if isempty(Ibreak)
                 tdoa = interp1(whaleOut{wn}.TDet(Iuse), whaleOut{wn}.TDOA(Iuse, ntdoa), whaleOut{wn}.TDet);
                 whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
-                continue            
+                continue
+            elseif length(Ibreak)==1
+                tdoa(Iuse(1):Iuse(Ibreak)) = interp1(whaleOut{wn}.TDet(Iuse), whaleOut{wn}.TDOA(Iuse, ntdoa), whaleOut{wn}.TDet);
+                whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
+                
             end
+
+            tdoa = nan(size(whaleOut{wn}.TDOA(:, ntdoa)));
 
             tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(1:Ibreak(1))), whaleOut{wn}.TDOA(Iuse(1:Ibreak(1)), ntdoa),...
                 whaleOut{wn}.TDet(Iuse(1):Iuse(Ibreak(1))));
-            tdoa(Iuse(1):Iuse(Ibreak(1))) = tdoa_part;
+            tdoa(Iuse(istart):Iuse(iend)) = tdoa_part;
             for ib = 1:length(Ibreak)-1
                 istart = Ibreak(ib)+1;
                 iend = Ibreak(ib+1);
@@ -66,8 +72,8 @@ for wn = 1:numel(whaleOut)
             end
 
             tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(Ibreak(end)+1:end)), whaleOut{wn}.TDOA(Iuse(Ibreak(end)+1:end), ntdoa),...
-                whaleOut{wn}.TDet(Iuse(Ibreak(end)+1):Iuse(end)));
-            tdoa(Iuse(Ibreak(end)+1):Iuse(end)) = tdoa_part;
+                whaleOut{wn}.TDet(Iuse(Ibreak(end)+1:end)));
+            tdoa(Iuse(istart):Iuse(iend)) = tdoa_part;
             
             whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
         end
@@ -102,7 +108,7 @@ for wn = 1:numel(whaleOut)
         wlocs(Irem, :) = [];
         wts(Irem) = [];
         bootfun = @(wlocs)(weightedAverage(wlocs, wts));
-        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student', 'Options',statset('UseParallel',true));
+        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student');
 
         wloc(Iuse(i), :) = mean(ci);
         CIx(Iuse(i), :) = ci(:, 1);
@@ -140,7 +146,7 @@ for wn = 1:numel(whaleOut)
         wts(Irem) = [];
 
         bootfun = @(wlocs)(weightedAverage(wlocs, wts));
-        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student', 'Options',statset('UseParallel',true));
+        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student');
         wloc(Iuse(i), :) = mean(ci);
 
         CIx(Iuse(i), :) = ci(:, 1);
@@ -195,7 +201,7 @@ for wn = 1:numel(whaleOut)
         wlocs(Irem, :) = [];
         wts(Irem) = [];
         bootfun = @(wlocs)(weightedAverage(wlocs, wts));
-        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student', 'Options',statset('UseParallel',true));
+        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student');
   
         wloc(Iuse(i), :) = mean(ci);
 
@@ -230,7 +236,7 @@ for wn = 1:numel(whaleOut)
         wts(Irem) = [];
 
         bootfun = @(wlocs)(weightedAverage(wlocs, wts));
-        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student', 'Options',statset('UseParallel',true));
+        ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student');
         wloc(Iuse(i), :) = mean(ci);
 
         CIx(Iuse(i), :) = ci(:, 1);

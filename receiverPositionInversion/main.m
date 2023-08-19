@@ -45,7 +45,7 @@ shipStruct = load([deploymentName, '_shipLatLon.mat']);
 
 % close all
 % H = brushDet_hydPosInv('shipTDOA.mat')
-[H, hydPos, CI] = brushTDOA_hydPosInv(TDOAstruct, shipStruct, 'brushTDOA_hydPosInv_SOCAL_E_63_EW.txt');
+[H, hydPos, CI] = brushTDOA_hydPosInv(TDOAstruct, shipStruct, ['brushTDOA_hydPosInv_', deploymentName, '.txt']);
 
-save('D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\SOCAL_E_63_EE_Hmatrix_new', 'H', 'hydPos', 'CI')
+save(['D:\MATLAB_addons\gitHub\wheresWhaledo\receiverPositionInversion\', deploymentName, '_new'], 'H', 'hydPos', 'CI')
 
