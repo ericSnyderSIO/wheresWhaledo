@@ -37,39 +37,45 @@ for wn = 1:numel(whaleOut)
 
     % Interpolate:
     if LOC.interp
-        for ntdoa = 1:18
-            Iuse = find(~isnan(whaleOut{wn}.TDOA(:, ntdoa)));
-            tdoa = nan(size(whaleOut{wn}.TDOA(:, ntdoa)));
+        try
+            for ntdoa = 1:18
+                Iuse = find(~isnan(whaleOut{wn}.TDOA(:, ntdoa)));
+                tdoa = nan(size(whaleOut{wn}.TDOA(:, ntdoa)));
 
-            if isempty(Iuse)
-                continue
-            end
-            
-            Ibreak = find(diff(whaleOut{wn}.TDet(Iuse))>(LOC.maxGap./spd));
+                if isempty(Iuse)
+                    continue
+                end
 
-            if isempty(Ibreak)
-                tdoa = interp1(whaleOut{wn}.TDet(Iuse), whaleOut{wn}.TDOA(Iuse, ntdoa), whaleOut{wn}.TDet);
+                Ibreak = find(diff(whaleOut{wn}.TDet(Iuse))>(LOC.maxGap./spd));
+
+                if isempty(Ibreak)
+                    tdoa = interp1(whaleOut{wn}.TDet(Iuse), whaleOut{wn}.TDOA(Iuse, ntdoa), whaleOut{wn}.TDet);
+                    whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
+                    continue
+                end
+
+                tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(1:Ibreak(1))), whaleOut{wn}.TDOA(Iuse(1:Ibreak(1)), ntdoa),...
+                    whaleOut{wn}.TDet(Iuse(1):Iuse(Ibreak(1))));
+                tdoa(Iuse(1):Iuse(Ibreak(1))) = tdoa_part;
+                for ib = 1:length(Ibreak)-1
+
+                    istart = Ibreak(ib)+1;
+                    iend = Ibreak(ib+1);
+                    if iend>istart
+                        tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(istart:iend)), whaleOut{wn}.TDOA(Iuse(istart:iend), ntdoa),...
+                            whaleOut{wn}.TDet(Iuse(istart):Iuse(iend)));
+                        tdoa(Iuse(istart):Iuse(iend)) = tdoa_part;
+                    end
+                end
+
+                tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(Ibreak(end)+1:end)), whaleOut{wn}.TDOA(Iuse(Ibreak(end)+1:end), ntdoa),...
+                    whaleOut{wn}.TDet(Iuse(Ibreak(end)+1):Iuse(end)));
+                tdoa(Iuse(Ibreak(end)+1):Iuse(end)) = tdoa_part;
+
                 whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
-                continue            
             end
-
-            tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(1:Ibreak(1))), whaleOut{wn}.TDOA(Iuse(1:Ibreak(1)), ntdoa),...
-                whaleOut{wn}.TDet(Iuse(1):Iuse(Ibreak(1))));
-            tdoa(Iuse(1):Iuse(Ibreak(1))) = tdoa_part;
-            for ib = 1:length(Ibreak)-1
-                istart = Ibreak(ib)+1;
-                iend = Ibreak(ib+1);
-                tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(istart:iend)), whaleOut{wn}.TDOA(Iuse(istart:iend), ntdoa),...
-                    whaleOut{wn}.TDet(Iuse(istart):Iuse(iend)));
-                tdoa(Iuse(istart):Iuse(iend)) = tdoa_part;
-
-            end
-
-            tdoa_part = interp1(whaleOut{wn}.TDet(Iuse(Ibreak(end)+1:end)), whaleOut{wn}.TDOA(Iuse(Ibreak(end)+1:end), ntdoa),...
-                whaleOut{wn}.TDet(Iuse(Ibreak(end)+1):Iuse(end)));
-            tdoa(Iuse(Ibreak(end)+1):Iuse(end)) = tdoa_part;
-            
-            whaleOut{wn}.TDOA(:, ntdoa) = tdoa;
+        catch
+            fprintf('\nCould not interpolate: whale %d, TDOA %d\n', wn, ntdoa)
         end
     end
     %% Case 1: DOA1 and at least one large ap TDOA:
@@ -196,7 +202,7 @@ for wn = 1:numel(whaleOut)
         wts(Irem) = [];
         bootfun = @(wlocs)(weightedAverage(wlocs, wts));
         ci = bootci(LOC.Nboot,{bootfun, wlocs},'Type','student', 'Options',statset('UseParallel',true));
-  
+
         wloc(Iuse(i), :) = mean(ci);
 
         CIx(Iuse(i), :) = ci(:, 1);
@@ -224,7 +230,7 @@ for wn = 1:numel(whaleOut)
         wlocs = [wlocs; wlocs_temp];
 
         wts = [wts; ones(size(wts_temp))./sum(var(wlocs))];
-        
+
         Irem = find(wts==inf | isnan(wts));
         wlocs(Irem, :) = [];
         wts(Irem) = [];

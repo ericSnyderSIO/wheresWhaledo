@@ -4,12 +4,12 @@ clear all
 tracksFolder = 'D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\'
 
 % trackNum = 30; % former large group
-% trackNum = 172;
-trackNum = 179; % Dolphin
+trackNum = 172;
+% trackNum = 179; % Dolphin
 % trackNum = 216; large group
 % trackNum = 600; % unambiguous
 
-
+trackNum = 4;
 % trackNum = 666;
 
 % TSTART = datenum([18 05 31 06 21 00]);
@@ -157,8 +157,8 @@ save(fullfile(dfile.folder, [trackName, '_noEdits']), 'DET')
 
 %% rerun brushDOA
 % load(['D:\SOCAL_E_63\tracking\interns2022\ericEdits_allTracks\track600_180611_110414\SOCAL_E_63_', trackName, '_ericMod_detections.mat'])
-% load(fullfile(dfile.folder, [trackName, '_noEdits']))
-load(fullfile(dfile.folder, [trackName, '_ericEdits']))
+load(fullfile(dfile.folder, [trackName, '_noEdits']))
+% load(fullfile(dfile.folder, [trackName, '_ericEdits']))
 
 for nd = 1:2
         DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) = DET{nd}.Ang((DET{nd}.Ang(:,1)<0),1) + 360;
